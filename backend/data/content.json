@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "influencerId": 1,
+    "type": "feed_post",
+    "url": "/storage/content_1_1764883822198_1.png",
+    "status": "completed",
+    "createdAt": "2025-12-04T22:46:04.675Z"
+  },
+  {
+    "id": 2,
+    "influencerId": 1,
+    "type": "feed_post",
+    "url": "/storage/content_1_1764884365263_1.png",
+    "status": "completed",
+    "createdAt": "2025-12-04T22:46:04.679Z"
+  },
+  {
+    "id": 3,
+    "influencerId": 1,
+    "type": "feed_post",
+    "url": "/storage/content_1_1764884955945_1.png",
+    "status": "completed",
+    "createdAt": "2025-12-04T22:46:04.679Z"
+  },
+  {
+    "id": 4,
+    "influencerId": 1,
+    "type": "feed_post",
+    "url": "/storage/content_1_1764887861617_1.png",
+    "status": "completed",
+    "createdAt": "2025-12-04T22:46:04.679Z"
+  },
+  {
+    "id": 5,
+    "influencerId": 2,
+    "type": "profile_image",
+    "url": "/storage/profile_1764889033040.png",
+    "status": "completed",
+    "createdAt": "2025-12-04T22:57:13.078Z"
+  },
+  {
+    "id": 6,
+    "influencerId": 3,
+    "type": "profile_image",
+    "url": "/storage/profile_1764889185422.png",
+    "status": "completed",
+    "createdAt": "2025-12-04T22:59:45.460Z"
+  }
+]

@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #0F0F0F;
+  color: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0F0F0F;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #616161;
+}
+
+/* Gradient Border Utilities */
+.gradient-border-bottom {
+  position: relative;
+}
+
+.gradient-border-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, rgba(147, 51, 234, 0.5), rgba(147, 51, 234, 0.3), rgba(107, 114, 128, 0.4), rgba(55, 65, 81, 0.5));
+}
+
+.gradient-border-right {
+  position: relative;
+}
+
+.gradient-border-right::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(147, 51, 234, 0.5), rgba(147, 51, 234, 0.3), rgba(107, 114, 128, 0.4), rgba(55, 65, 81, 0.5));
+}
+
+.gradient-border-top {
+  position: relative;
+}
+
+.gradient-border-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, rgba(147, 51, 234, 0.5), rgba(147, 51, 234, 0.3), rgba(107, 114, 128, 0.4), rgba(55, 65, 81, 0.5));
+}
+
+/* Gradient border for cards (all sides with rounded corners) */
+.gradient-border-card {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.gradient-border-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.5), rgba(147, 51, 234, 0.3), rgba(107, 114, 128, 0.4), rgba(55, 65, 81, 0.5));
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.gradient-border-card:hover::before {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.6), rgba(147, 51, 234, 0.4), rgba(107, 114, 128, 0.5), rgba(55, 65, 81, 0.6));
+}
+

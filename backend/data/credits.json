@@ -1,0 +1,107 @@
+{
+  "balance": 9.81,
+  "currency": "USD",
+  "totalSpent": 0.14,
+  "totalGenerated": 14,
+  "lastUpdated": "2025-12-04T23:06:51.082Z",
+  "transactions": [
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T21:30:22.197Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T21:39:25.262Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T21:49:15.944Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T21:54:00.047Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T22:37:41.616Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T22:57:13.038Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T22:59:45.421Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T23:04:18.007Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T23:04:43.837Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T23:05:08.535Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T23:05:35.188Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T23:06:00.388Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T23:06:27.062Z",
+      "description": "Generated 1 image"
+    },
+    {
+      "type": "deduction",
+      "amount": 0.01,
+      "count": 1,
+      "timestamp": "2025-12-04T23:06:51.082Z",
+      "description": "Generated 1 image"
+    }
+  ]
+}
