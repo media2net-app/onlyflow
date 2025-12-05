@@ -5,6 +5,8 @@ import influencerRoutes from './routes/influencerRoutes.js'
 import contentRoutes from './routes/contentRoutes.js'
 import generationRoutes from './routes/generationRoutes.js'
 import aiRoutes from './routes/aiRoutes.js'
+import socialRoutes from './routes/socialRoutes.js'
+import heygenRoutes from './routes/heygenRoutes.js'
 
 dotenv.config()
 
@@ -29,6 +31,8 @@ app.use('/api/influencers', influencerRoutes)
 app.use('/api/content', contentRoutes)
 app.use('/api/generation', generationRoutes)
 app.use('/api/ai', aiRoutes)
+app.use('/api/social', socialRoutes)
+app.use('/api/heygen', heygenRoutes)
 
 // Serve storage files
 app.use('/storage', express.static('storage'))

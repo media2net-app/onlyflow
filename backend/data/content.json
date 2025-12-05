@@ -46,5 +46,615 @@
     "url": "/storage/profile_1764889185422.png",
     "status": "completed",
     "createdAt": "2025-12-04T22:59:45.460Z"
+  },
+  {
+    "id": 13,
+    "influencerId": 3,
+    "type": "style_image",
+    "url": "/storage/style_3_glam_elegant_1764891604490_1691.png",
+    "status": "completed",
+    "style": "GLAM/ELEGANT",
+    "createdAt": "2025-12-04T23:40:04.495Z"
+  },
+  {
+    "id": 14,
+    "influencerId": 3,
+    "type": "style_image",
+    "url": "/storage/style_3_lingerie_1764891673221_4538.png",
+    "status": "completed",
+    "style": "LINGERIE",
+    "createdAt": "2025-12-04T23:41:13.227Z"
+  },
+  {
+    "id": 15,
+    "influencerId": 3,
+    "type": "style_image",
+    "url": "/storage/style_3_casual_1764891707648_6449.png",
+    "status": "completed",
+    "style": "CASUAL",
+    "createdAt": "2025-12-04T23:41:47.656Z"
+  },
+  {
+    "id": 16,
+    "influencerId": 3,
+    "type": "style_image",
+    "url": "/storage/style_3_sporty_1764891763028_7734.png",
+    "status": "completed",
+    "style": "SPORTY",
+    "createdAt": "2025-12-04T23:42:43.031Z"
+  },
+  {
+    "id": 18,
+    "influencerId": 3,
+    "type": "style_image",
+    "url": "/storage/style_3_professional_1764891844976_9444.png",
+    "status": "completed",
+    "style": "PROFESSIONAL",
+    "createdAt": "2025-12-04T23:44:04.978Z"
+  },
+  {
+    "id": 19,
+    "influencerId": 3,
+    "type": "style_image",
+    "url": "/storage/style_3_youthful_1764891934345_7896.png",
+    "status": "completed",
+    "style": "YOUTHFUL",
+    "createdAt": "2025-12-04T23:45:34.349Z"
+  },
+  {
+    "id": 21,
+    "influencerId": 1,
+    "type": "style_image",
+    "url": "/storage/style_1_glam_elegant_1764892231473_8488.png",
+    "status": "completed",
+    "style": "GLAM/ELEGANT",
+    "createdAt": "2025-12-04T23:50:31.476Z"
+  },
+  {
+    "id": 22,
+    "influencerId": 1,
+    "type": "style_image",
+    "url": "/storage/style_1_professional_1764892298341_7738.png",
+    "status": "completed",
+    "style": "PROFESSIONAL",
+    "createdAt": "2025-12-04T23:51:38.345Z"
+  },
+  {
+    "id": 23,
+    "influencerId": 1,
+    "type": "style_image",
+    "url": "/storage/style_1_lingerie_1764892340634_3180.png",
+    "status": "completed",
+    "style": "LINGERIE",
+    "createdAt": "2025-12-04T23:52:20.637Z"
+  },
+  {
+    "id": 25,
+    "influencerId": 1,
+    "type": "style_image",
+    "url": "/storage/style_1_youthful_1764892438515_8376.png",
+    "status": "completed",
+    "style": "YOUTHFUL",
+    "createdAt": "2025-12-04T23:53:58.518Z"
+  },
+  {
+    "id": 27,
+    "influencerId": 1,
+    "type": "style_image",
+    "url": "/storage/style_1_sporty_1764892510173_1250.png",
+    "status": "completed",
+    "style": "SPORTY",
+    "createdAt": "2025-12-04T23:55:10.176Z"
+  },
+  {
+    "id": 28,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473426_4024_1.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.432Z"
+  },
+  {
+    "id": 30,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473438_2694_3.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.441Z"
+  },
+  {
+    "id": 31,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473442_2290_4.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.443Z"
+  },
+  {
+    "id": 32,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473445_797_5.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.447Z"
+  },
+  {
+    "id": 33,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473449_3265_6.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.451Z"
+  },
+  {
+    "id": 34,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473453_7251_7.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.454Z"
+  },
+  {
+    "id": 35,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473456_4196_8.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.459Z"
+  },
+  {
+    "id": 37,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473482_7812_10.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.484Z"
+  },
+  {
+    "id": 38,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473485_500_11.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.487Z"
+  },
+  {
+    "id": 39,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473489_6390_12.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.492Z"
+  },
+  {
+    "id": 40,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473493_8710_13.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.495Z"
+  },
+  {
+    "id": 41,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473497_7689_14.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.499Z"
+  },
+  {
+    "id": 42,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473500_559_15.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.502Z"
+  },
+  {
+    "id": 43,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473503_2556_16.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.505Z"
+  },
+  {
+    "id": 44,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473507_58_17.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.509Z"
+  },
+  {
+    "id": 45,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473510_4751_18.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.513Z"
+  },
+  {
+    "id": 46,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473515_3476_19.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.517Z"
+  },
+  {
+    "id": 47,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764911473519_6820_20.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T05:11:13.522Z"
+  },
+  {
+    "id": 48,
+    "influencerId": 2,
+    "type": "style_image",
+    "url": "/storage/style_2_lingerie_1764913914276_9814.png",
+    "status": "completed",
+    "style": "LINGERIE",
+    "createdAt": "2025-12-05T05:51:54.280Z"
+  },
+  {
+    "id": 51,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720784_3180_1.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.791Z"
+  },
+  {
+    "id": 52,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720794_3312_2.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.801Z"
+  },
+  {
+    "id": 53,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720811_3462_3.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.814Z"
+  },
+  {
+    "id": 54,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720818_9814_4.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.823Z"
+  },
+  {
+    "id": 55,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720830_7545_5.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.840Z"
+  },
+  {
+    "id": 56,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720848_7967_6.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.862Z"
+  },
+  {
+    "id": 57,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720869_8944_7.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.872Z"
+  },
+  {
+    "id": 58,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720875_4802_8.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.878Z"
+  },
+  {
+    "id": 59,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720887_5494_9.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.890Z"
+  },
+  {
+    "id": 60,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720899_5330_10.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.903Z"
+  },
+  {
+    "id": 61,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720906_1068_11.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:20.909Z"
+  },
+  {
+    "id": 63,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914720930_1749_13.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.047Z"
+  },
+  {
+    "id": 64,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914721079_824_14.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.087Z"
+  },
+  {
+    "id": 65,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914721099_9074_15.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.112Z"
+  },
+  {
+    "id": 66,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914721135_2462_16.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.141Z"
+  },
+  {
+    "id": 67,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914721146_7211_17.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.152Z"
+  },
+  {
+    "id": 68,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914721161_4887_18.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.167Z"
+  },
+  {
+    "id": 69,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914721170_8870_19.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.176Z"
+  },
+  {
+    "id": 70,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764914721186_9620_20.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T06:05:21.289Z"
+  },
+  {
+    "id": 71,
+    "influencerId": 4,
+    "type": "profile_image",
+    "url": "/storage/profile_1764919001008.png",
+    "status": "completed",
+    "createdAt": "2025-12-05T07:16:41.028Z"
+  },
+  {
+    "id": 72,
+    "influencerId": 3,
+    "type": "training_image",
+    "url": "/storage/training_3_1764919371517_4902_1.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 18 years old, Blond hair, wearing black lace lingerie set, in luxury bedroom with silk sheets, sitting on bed, looking at camera seductively, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:22:51.521Z"
+  },
+  {
+    "id": 73,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670832_8887_1.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing black lace lingerie set, in luxury bedroom with silk sheets, sitting on bed, looking at camera seductively, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.838Z"
+  },
+  {
+    "id": 74,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670841_360_2.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing red satin bra and panties, in boudoir with dim lighting, leaning against mirror, confident pose, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.846Z"
+  },
+  {
+    "id": 75,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670848_4524_3.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing white lace bodysuit, in modern apartment with city view, standing by window, natural lighting, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.850Z"
+  },
+  {
+    "id": 76,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670857_2157_4.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing black leather corset with stockings, in dark elegant room, sitting on chair, legs crossed, alluring look, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.880Z"
+  },
+  {
+    "id": 77,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670882_4393_5.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing sexy red dress with high heels, in luxury hotel room, standing pose, hand on hip, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.884Z"
+  },
+  {
+    "id": 78,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670889_3690_6.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing black mesh bodysuit, in studio with dramatic lighting, artistic pose, looking away, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.894Z"
+  },
+  {
+    "id": 79,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670896_6437_7.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing white silk robe open, matching lingerie underneath, in spa-like bathroom, leaning on vanity, relaxed, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.900Z"
+  },
+  {
+    "id": 80,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670903_2862_8.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing black lace teddy with garter belt, in bedroom with candlelight, lying on bed, playful pose, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.907Z"
+  },
+  {
+    "id": 81,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670910_5268_9.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing sexy workout set, sports bra and leggings, in modern gym, stretching pose, athletic, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.913Z"
+  },
+  {
+    "id": 82,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670914_8664_10.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing black silk slip dress, in penthouse with city lights, standing by balcony, elegant, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.916Z"
+  },
+  {
+    "id": 84,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670928_4859_12.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing white lace babydoll nightie, in bright bedroom with natural light, laying on bed, innocent yet sexy, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.932Z"
+  },
+  {
+    "id": 85,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670933_8601_13.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing black leather jacket open, red lingerie underneath, in urban loft, leaning against wall, edgy, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.936Z"
+  },
+  {
+    "id": 86,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670940_4714_14.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing sexy black bodysuit with cutouts, in nightclub bathroom, mirror selfie style, sultry, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.945Z"
+  },
+  {
+    "id": 87,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670947_8651_15.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing pink satin lingerie set, in boudoir with soft lighting, sitting on chaise lounge, elegant, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.950Z"
+  },
+  {
+    "id": 88,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670951_2700_16.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing black mesh top with leather pants, in modern apartment, standing pose, confident and bold, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.956Z"
+  },
+  {
+    "id": 89,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670960_1192_17.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing white lace chemise, in luxury bedroom with flowers, sitting on bed, romantic and sensual, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.963Z"
+  },
+  {
+    "id": 90,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670966_1452_18.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing red corset with black stockings, in vintage styled room, posing on vintage chair, classic pin-up style, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.969Z"
+  },
+  {
+    "id": 91,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670973_7777_19.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing sexy black lace bra and panty set, in hotel room with city view, standing by window, silhouette, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.977Z"
+  },
+  {
+    "id": 92,
+    "influencerId": 4,
+    "type": "training_image",
+    "url": "/storage/training_4_1764919670979_746_20.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, long brown hair hair, wearing nude colored lace bodysuit, in minimalist modern bedroom, artistic nude-inspired pose, tasteful, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:27:50.982Z"
+  },
+  {
+    "id": 93,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764920527787_1343_1.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, wearing black lace lingerie set, in luxury bedroom with silk sheets, sitting on bed, looking at camera seductively, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:42:07.802Z"
+  },
+  {
+    "id": 94,
+    "influencerId": 1,
+    "type": "training_image",
+    "url": "/storage/training_1_1764920527812_9220_2.png",
+    "status": "completed",
+    "prompt": "portrait photo of female, 24 years old, wearing red satin bra and panties, in boudoir with dim lighting, leaning against mirror, confident pose, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful",
+    "createdAt": "2025-12-05T07:42:07.848Z"
   }
 ]

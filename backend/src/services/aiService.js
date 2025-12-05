@@ -382,6 +382,26 @@ export async function generateTrainingImages(influencerData, count = 25, profile
     style // Specific style for style-based generation
   } = influencerData
 
+  // Style-specific location mapping
+  const styleLocations = {
+    'GLAM/ELEGANT': 'luxury hotel lobby or elegant restaurant',
+    'PROFESSIONAL': 'modern office or business conference room',
+    'LINGERIE': 'luxury bedroom or boudoir setting',
+    'CASUAL': 'cozy coffee shop or urban street',
+    'YOUTHFUL': 'vibrant city park or trendy shopping district',
+    'SPORTY': 'modern gym or outdoor sports facility'
+  }
+
+  // Style-specific clothing descriptions (to avoid age/appearance changes)
+  const styleClothingDescriptions = {
+    'GLAM/ELEGANT': 'elegant and glamorous clothing, sophisticated style',
+    'PROFESSIONAL': 'professional business attire, formal clothing',
+    'LINGERIE': 'lingerie and intimate apparel',
+    'CASUAL': 'casual everyday clothing, relaxed style',
+    'YOUTHFUL': 'trendy casual clothing, fashion-forward streetwear, contemporary style',
+    'SPORTY': 'athletic wear, sportswear, active clothing'
+  }
+
   // Build detailed prompt
   let prompt = `portrait photo of ${gender.toLowerCase()}, ${age} years old`
   
@@ -389,19 +409,37 @@ export async function generateTrainingImages(influencerData, count = 25, profile
     prompt += `, ${hairColor} hair`
   }
   
-  if (location) {
-    prompt += `, in ${location}`
+  // Use style-specific location if style is provided, otherwise use influencer location
+  let locationToUse = location
+  if (style && styleLocations[style]) {
+    locationToUse = styleLocations[style]
+    console.log(`📍 Using style-specific location for "${style}": "${locationToUse}"`)
+  }
+  
+  if (locationToUse) {
+    prompt += `, in ${locationToUse}`
   }
   
   // Use specific style if provided, otherwise use first from clothingStyles array
   if (style) {
-    // Format style name: "GLAM/ELEGANT" -> "glam elegant", "SPORTY" -> "sporty"
-    const formattedStyle = style.toLowerCase().replace(/\//g, ' ').replace(/_/g, ' ')
-    prompt += `, wearing ${formattedStyle} style clothing`
-    console.log(`🎨 Using style in prompt: "${formattedStyle}" (from: "${style}")`)
+    // Use style-specific clothing description to avoid age/appearance changes
+    if (styleClothingDescriptions[style]) {
+      prompt += `, wearing ${styleClothingDescriptions[style]}`
+      console.log(`🎨 Using style-specific clothing description for "${style}": "${styleClothingDescriptions[style]}"`)
+    } else {
+      // Fallback: format style name
+      const formattedStyle = style.toLowerCase().replace(/\//g, ' ').replace(/_/g, ' ')
+      prompt += `, wearing ${formattedStyle} style clothing`
+      console.log(`🎨 Using style in prompt: "${formattedStyle}" (from: "${style}")`)
+    }
   } else if (clothingStyles && clothingStyles.length > 0) {
-    const formattedStyle = clothingStyles[0].toLowerCase().replace(/\//g, ' ').replace(/_/g, ' ')
-    prompt += `, wearing ${formattedStyle} style clothing`
+    const firstStyle = clothingStyles[0]
+    if (styleClothingDescriptions[firstStyle]) {
+      prompt += `, wearing ${styleClothingDescriptions[firstStyle]}`
+    } else {
+      const formattedStyle = firstStyle.toLowerCase().replace(/\//g, ' ').replace(/_/g, ' ')
+      prompt += `, wearing ${formattedStyle} style clothing`
+    }
   }
   
   if (settings && settings.length > 0) {
@@ -443,17 +481,31 @@ export async function generateTrainingImages(influencerData, count = 25, profile
   }
 
   const images = []
-  const variations = [
-    'close-up portrait',
-    'full body shot',
-    'medium shot',
-    'side profile',
-    'looking at camera',
-    'smiling',
-    'casual pose',
-    'professional pose',
-    'outdoor setting',
-    'indoor setting'
+  const prompts = [] // Store prompts for each image
+  
+  // 20 different sexy and provocative training image prompts
+  // Each with different outfits, settings, and poses - but same character
+  const trainingImagePrompts = [
+    { outfit: 'black lace lingerie set', setting: 'luxury bedroom with silk sheets', pose: 'sitting on bed, looking at camera seductively' },
+    { outfit: 'red satin bra and panties', setting: 'boudoir with dim lighting', pose: 'leaning against mirror, confident pose' },
+    { outfit: 'white lace bodysuit', setting: 'modern apartment with city view', pose: 'standing by window, natural lighting' },
+    { outfit: 'black leather corset with stockings', setting: 'dark elegant room', pose: 'sitting on chair, legs crossed, alluring look' },
+    { outfit: 'sexy red dress with high heels', setting: 'luxury hotel room', pose: 'standing pose, hand on hip' },
+    { outfit: 'black mesh bodysuit', setting: 'studio with dramatic lighting', pose: 'artistic pose, looking away' },
+    { outfit: 'white silk robe open, matching lingerie underneath', setting: 'spa-like bathroom', pose: 'leaning on vanity, relaxed' },
+    { outfit: 'black lace teddy with garter belt', setting: 'bedroom with candlelight', pose: 'lying on bed, playful pose' },
+    { outfit: 'sexy workout set, sports bra and leggings', setting: 'modern gym', pose: 'stretching pose, athletic' },
+    { outfit: 'black silk slip dress', setting: 'penthouse with city lights', pose: 'standing by balcony, elegant' },
+    { outfit: 'red lace bralette and thong', setting: 'luxury hotel suite', pose: 'sitting on edge of bed, confident' },
+    { outfit: 'white lace babydoll nightie', setting: 'bright bedroom with natural light', pose: 'laying on bed, innocent yet sexy' },
+    { outfit: 'black leather jacket open, red lingerie underneath', setting: 'urban loft', pose: 'leaning against wall, edgy' },
+    { outfit: 'sexy black bodysuit with cutouts', setting: 'nightclub bathroom', pose: 'mirror selfie style, sultry' },
+    { outfit: 'pink satin lingerie set', setting: 'boudoir with soft lighting', pose: 'sitting on chaise lounge, elegant' },
+    { outfit: 'black mesh top with leather pants', setting: 'modern apartment', pose: 'standing pose, confident and bold' },
+    { outfit: 'white lace chemise', setting: 'luxury bedroom with flowers', pose: 'sitting on bed, romantic and sensual' },
+    { outfit: 'red corset with black stockings', setting: 'vintage styled room', pose: 'posing on vintage chair, classic pin-up style' },
+    { outfit: 'sexy black lace bra and panty set', setting: 'hotel room with city view', pose: 'standing by window, silhouette' },
+    { outfit: 'nude colored lace bodysuit', setting: 'minimalist modern bedroom', pose: 'artistic nude-inspired pose, tasteful' }
   ]
 
   // Check if we're in mock mode
@@ -462,11 +514,26 @@ export async function generateTrainingImages(influencerData, count = 25, profile
   // Generate images with variations - use parsed count
   console.log(`   🔄 Starting loop to generate ${imageCount} image(s)`)
   for (let i = 0; i < imageCount; i++) {
-    const variation = variations[i % variations.length]
-    const imagePrompt = `${prompt}, ${variation}`
+    // Use specific training prompt if available, otherwise use base prompt with variation
+    let imagePrompt
+    if (i < trainingImagePrompts.length && !style) {
+      // Use one of the 20 specific training prompts
+      const trainingPrompt = trainingImagePrompts[i]
+      imagePrompt = `portrait photo of ${gender.toLowerCase()}, ${age} years old`
+      if (hairColor) {
+        imagePrompt += `, ${hairColor} hair`
+      }
+      imagePrompt += `, wearing ${trainingPrompt.outfit}, in ${trainingPrompt.setting}, ${trainingPrompt.pose}, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful`
+      console.log(`📸 Training Image ${i + 1}/20: ${trainingPrompt.outfit} in ${trainingPrompt.setting}`)
+    } else {
+      // Fallback to original variation system for style-specific or extra images
+      const variation = trainingImagePrompts[i % trainingImagePrompts.length]
+      imagePrompt = `${prompt}, wearing ${variation.outfit}, in ${variation.setting}, ${variation.pose}`
+      console.log(`📸 Training Image ${i + 1}/${imageCount}: Using variation ${(i % trainingImagePrompts.length) + 1}`)
+    }
     
       try {
-        console.log(`Generating image ${i + 1}/${count}${characterImage ? ' (with character reference)' : ''}...`)
+        console.log(`Generating image ${i + 1}/${imageCount}${characterImage ? ' (with character reference for consistency)' : ' (WARNING: no character reference - face may vary!)'}...`)
         const image = await generateImage(imagePrompt, {
           model: 'minimax/image-01',
           aspect_ratio: '1:1',
@@ -474,6 +541,7 @@ export async function generateTrainingImages(influencerData, count = 25, profile
           ...(characterImage ? { character_image: characterImage } : {})
         })
         images.push(image)
+        prompts.push(imagePrompt) // Store the prompt for this image
         
         // Deduct credits for this image (only if not in mock mode)
         if (!MOCK_MODE) {
@@ -494,7 +562,7 @@ export async function generateTrainingImages(influencerData, count = 25, profile
     }
   }
 
-  return images
+  return { images, prompts } // Return both images and prompts
 }
 
 /**

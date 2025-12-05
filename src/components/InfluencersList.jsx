@@ -348,18 +348,26 @@ function InfluencerCard({ influencer, onDelete, onUpdate }) {
           </div>
           
           {/* Quick Actions */}
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center space-x-2">
+              <Link
+                to={`/influencers/train?edit=${influencer.id}`}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-purple-600/20 text-center text-sm"
+              >
+                Edit Profile
+              </Link>
+              <Link
+                to={`/content?influencerId=${influencer.id}`}
+                className="flex-1 bg-dark-card/50 backdrop-blur-sm hover:bg-dark-card/80 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 border border-white/5 hover:border-purple-500/30 text-center text-sm"
+              >
+                View Content
+              </Link>
+            </div>
             <Link
-              to={`/influencers/train?edit=${influencer.id}`}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-purple-600/20 text-center text-sm"
+              to={`/content-plan?influencerId=${influencer.id}`}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-blue-600/20 text-center text-sm"
             >
-              Edit Profile
-            </Link>
-            <Link
-              to={`/content?influencerId=${influencer.id}`}
-              className="flex-1 bg-dark-card/50 backdrop-blur-sm hover:bg-dark-card/80 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 border border-white/5 hover:border-purple-500/30 text-center text-sm"
-            >
-              View Content
+              View Content Plan
             </Link>
           </div>
         </div>

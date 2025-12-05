@@ -71,6 +71,11 @@ export const contentAPI = {
     body: JSON.stringify(data),
   }),
   
+  update: (id, data) => apiCall(`/content/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  
   delete: (id) => apiCall(`/content/${id}`, {
     method: 'DELETE',
   }),
@@ -101,6 +106,43 @@ export const aiAPI = {
   }),
   
   getCredits: () => apiCall('/ai/credits'),
+}
+
+// Social Media API
+export const socialAPI = {
+  getAccounts: (influencerId) => apiCall(`/social/accounts/${influencerId}`),
+  connectAccount: async (platform, influencerId) => {
+    try {
+      const response = await fetch(`${API_BASE}/social/connect/${platform}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ influencerId })
+      })
+      return await response.json()
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  },
+  disconnectAccount: (platform, influencerId) => apiCall(`/social/disconnect/${platform}/${influencerId}`, { 
+    method: 'DELETE' 
+  }),
+  refreshConnection: (platform, influencerId) => apiCall(`/social/refresh/${platform}/${influencerId}`, { 
+    method: 'POST' 
+  }),
+  getPlatformStatus: (platform) => apiCall(`/social/platforms/${platform}/status`)
+}
+
+// HeyGen API
+export const heygenAPI = {
+  createVideo: (data) => apiCall('/heygen/video/create', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+  getVideoStatus: (videoId) => apiCall(`/heygen/video/${videoId}/status`),
+  listAvatars: () => apiCall('/heygen/avatars'),
+  listVoices: () => apiCall('/heygen/voices')
 }
 
 // Health check

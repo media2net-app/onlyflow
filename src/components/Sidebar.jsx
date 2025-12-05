@@ -11,7 +11,9 @@ import {
   HiOutlineBookOpen,
   HiOutlineCurrencyDollar,
   HiOutlineQuestionMarkCircle,
-  HiOutlineUserGroup
+  HiOutlineUserGroup,
+  HiOutlineSparkles,
+  HiOutlineVideoCamera
 } from 'react-icons/hi'
 
 function Sidebar() {
@@ -26,6 +28,10 @@ function Sidebar() {
     { name: 'Single Content', path: '/single', icon: HiOutlineDocument },
     { name: 'Social Media', path: '/social', icon: HiOutlineShare },
     { name: 'Audits', path: '/audits', icon: HiOutlineClipboardCheck },
+    { name: 'Emilypellegrini Strategy', path: '/emilypellegrini-strategy', icon: HiOutlineDocument },
+    { name: 'Prompt Testing', path: '/prompt-testing', icon: HiOutlineDocument },
+    { name: 'Minimax (AI tool)', path: '/minimax', icon: HiOutlineSparkles },
+    { name: 'Video', path: '/video', icon: HiOutlineVideoCamera },
   ]
 
   const lowerMenuItems = [

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
@@ -13,6 +13,8 @@ import {
   HiOutlinePlay,
   HiOutlineSparkles,
   HiOutlineCloudUpload,
+  HiOutlineRefresh,
+  HiOutlineEye,
   HiX
 } from 'react-icons/hi'
 
@@ -51,7 +53,15 @@ function Influencers() {
   const [selectedStyleForModal, setSelectedStyleForModal] = useState(null)
   const [generatingStyleImages, setGeneratingStyleImages] = useState(false)
   const [uploadingStyleImages, setUploadingStyleImages] = useState(false)
+  const [trainingImageModalOpen, setTrainingImageModalOpen] = useState(false)
+  const [selectedTrainingImage, setSelectedTrainingImage] = useState(null) // {content object}
+  const [regeneratingTrainingImage, setRegeneratingTrainingImage] = useState(false)
+  const [customPrompt, setCustomPrompt] = useState('')
+  const [showPromptPreview, setShowPromptPreview] = useState(false)
+  const [previewPrompts, setPreviewPrompts] = useState([])
+  const [usingEmilyStrategy, setUsingEmilyStrategy] = useState(false)
   const [generatingProfile, setGeneratingProfile] = useState(false)
+  const trainingImagePollIntervalRef = useRef(null) // Store polling interval to prevent multiple instances
   const [showGenerationModal, setShowGenerationModal] = useState(false)
   const [generationProgress, setGenerationProgress] = useState(0)
   const [generationStatus, setGenerationStatus] = useState('idle') // idle, generating, completed, error
@@ -60,6 +70,7 @@ function Influencers() {
   const [showProfileImageModal, setShowProfileImageModal] = useState(false)
   const [saveStatus, setSaveStatus] = useState(null) // 'saving', 'saved', 'error'
   const [saveTimeout, setSaveTimeout] = useState(null)
+  const step4Ref = useRef(null) // Ref for Step 4 to maintain scroll position
 
   // Load influencer data when in edit mode
   useEffect(() => {
@@ -88,26 +99,28 @@ function Influencers() {
         console.log('Influencer response:', influencerRes)
         console.log('Content response:', contentRes)
         
+        let influencerData = null
+        
         if (influencerRes.success && influencerRes.data) {
-          const inf = influencerRes.data
-          setCurrentInfluencerId(inf.id)
-          setInfluencerName(inf.name || '')
-          setDescription(inf.description || '')
-          setGender(inf.gender || 'Female')
-          setAge(inf.age || 24)
-          setLocation(inf.location || '')
-          setHairColor(inf.hairColor || '')
-          setActivities(Array.isArray(inf.activities) ? inf.activities : [])
-          setSettings(Array.isArray(inf.settings) ? inf.settings : [])
-          setAdditionalInfo(Array.isArray(inf.additionalInfo) ? inf.additionalInfo : [])
-          setSelectedStyles(Array.isArray(inf.clothingStyles) ? inf.clothingStyles : (Array.isArray(inf.stylesChosen) ? inf.stylesChosen : []))
-          setFeedPosts(inf.feedPosts || 0)
-          setStoryPosts(inf.storyPosts || 0)
+          influencerData = influencerRes.data
+          setCurrentInfluencerId(influencerData.id)
+          setInfluencerName(influencerData.name || '')
+          setDescription(influencerData.description || '')
+          setGender(influencerData.gender || 'Female')
+          setAge(influencerData.age || 24)
+          setLocation(influencerData.location || '')
+          setHairColor(influencerData.hairColor || '')
+          setActivities(Array.isArray(influencerData.activities) ? influencerData.activities : [])
+          setSettings(Array.isArray(influencerData.settings) ? influencerData.settings : [])
+          setAdditionalInfo(Array.isArray(influencerData.additionalInfo) ? influencerData.additionalInfo : [])
+          setSelectedStyles(Array.isArray(influencerData.clothingStyles) ? influencerData.clothingStyles : (Array.isArray(influencerData.stylesChosen) ? influencerData.stylesChosen : []))
+          setFeedPosts(influencerData.feedPosts || 0)
+          setStoryPosts(influencerData.storyPosts || 0)
           
-          if (inf.imageUrl) {
-            const fullImageUrl = inf.imageUrl.startsWith('http') 
-              ? inf.imageUrl 
-              : `http://localhost:3001${inf.imageUrl}`
+          if (influencerData.imageUrl) {
+            const fullImageUrl = influencerData.imageUrl.startsWith('http') 
+              ? influencerData.imageUrl 
+              : `http://localhost:3001${influencerData.imageUrl}`
             setProfileImageUrl(fullImageUrl)
           }
         } else {
@@ -117,34 +130,44 @@ function Influencers() {
         if (contentRes.success && contentRes.data) {
           setGeneratedContent(Array.isArray(contentRes.data) ? contentRes.data : [])
           
-          // Load training images from content
+          // Load training images from content (ONLY training_image, not profile_image)
           const contentArray = Array.isArray(contentRes.data) ? contentRes.data : []
           const trainingImgs = contentArray
-            .filter(c => c && (c.type === 'training_image' || c.type === 'profile_image'))
+            .filter(c => c && c.type === 'training_image') // Only training_image, exclude profile_image
+            .sort((a, b) => {
+              // Sort by createdAt or id to maintain order
+              if (a.createdAt && b.createdAt) {
+                return new Date(a.createdAt) - new Date(b.createdAt)
+              }
+              return (a.id || 0) - (b.id || 0)
+            })
             .map(c => c.url && c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
           setTrainingImages(trainingImgs)
+          console.log(`✅ Loaded ${trainingImgs.length} training images (excluding profile image)`)
           
           // Auto-select styles from existing style_image content
-          const styleImages = contentArray.filter(c => c && c.type === 'style_image' && c.style)
-          if (styleImages.length > 0) {
-            const foundStyles = [...new Set(styleImages.map(c => c.style).filter(Boolean))]
-            if (foundStyles.length > 0) {
-              // Merge with existing selected styles
-              const currentStyles = Array.isArray(inf.clothingStyles) ? inf.clothingStyles : []
-              const mergedStyles = [...new Set([...currentStyles, ...foundStyles])]
-              setSelectedStyles(mergedStyles)
-              
-              // Update influencer with merged styles if different
-              if (mergedStyles.length !== currentStyles.length || 
-                  mergedStyles.some(s => !currentStyles.includes(s))) {
-                try {
-                  await influencersAPI.update(inf.id, {
-                    clothingStyles: mergedStyles,
-                    stylesChosen: mergedStyles.length
-                  })
-                  console.log('✅ Auto-selected styles from existing content:', mergedStyles)
-                } catch (err) {
-                  console.error('Error updating styles:', err)
+          if (influencerData) {
+            const styleImages = contentArray.filter(c => c && c.type === 'style_image' && c.style)
+            if (styleImages.length > 0) {
+              const foundStyles = [...new Set(styleImages.map(c => c.style).filter(Boolean))]
+              if (foundStyles.length > 0) {
+                // Merge with existing selected styles
+                const currentStyles = Array.isArray(influencerData.clothingStyles) ? influencerData.clothingStyles : []
+                const mergedStyles = [...new Set([...currentStyles, ...foundStyles])]
+                setSelectedStyles(mergedStyles)
+                
+                // Update influencer with merged styles if different
+                if (mergedStyles.length !== currentStyles.length || 
+                    mergedStyles.some(s => !currentStyles.includes(s))) {
+                  try {
+                    await influencersAPI.update(influencerData.id, {
+                      clothingStyles: mergedStyles,
+                      stylesChosen: mergedStyles.length
+                    })
+                    console.log('✅ Auto-selected styles from existing content:', mergedStyles)
+                  } catch (err) {
+                    console.error('Error updating styles:', err)
+                  }
                 }
               }
             }
@@ -160,6 +183,55 @@ function Influencers() {
     
     loadInfluencerData()
   }, [isEditMode, editId])
+
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (trainingImagePollIntervalRef.current) {
+        clearInterval(trainingImagePollIntervalRef.current)
+        trainingImagePollIntervalRef.current = null
+      }
+    }
+  }, [])
+
+  // Periodically refresh content to check for new training images (when in edit mode)
+  useEffect(() => {
+    if (!isEditMode || !editId) return
+
+    const influencerId = currentInfluencerId || (editId ? parseInt(editId) : null)
+    if (!influencerId) return
+
+    // Refresh content every 3 seconds to check for new training images
+    const refreshInterval = setInterval(async () => {
+      try {
+        const contentRes = await contentAPI.getByInfluencer(influencerId)
+        if (contentRes.success && contentRes.data) {
+          const contentArray = Array.isArray(contentRes.data) ? contentRes.data : []
+          const trainingImgs = contentArray
+            .filter(c => c && c.type === 'training_image')
+            .sort((a, b) => {
+              if (a.createdAt && b.createdAt) {
+                return new Date(a.createdAt) - new Date(b.createdAt)
+              }
+              return (a.id || 0) - (b.id || 0)
+            })
+            .map(c => c.url && c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
+          
+          // Always update to ensure latest images are shown
+          setGeneratedContent(contentArray)
+          setTrainingImages(trainingImgs)
+          
+          if (trainingImgs.length > 0) {
+            console.log(`🔄 Auto-refresh: Found ${trainingImgs.length} training images`)
+          }
+        }
+      } catch (err) {
+        console.error('Error refreshing content:', err)
+      }
+    }, 3000) // Check every 3 seconds
+
+    return () => clearInterval(refreshInterval)
+  }, [isEditMode, editId, currentInfluencerId])
 
   const handleGenerateWithAI = async () => {
     if (!influencerName || !gender || !age) {
@@ -282,44 +354,65 @@ function Influencers() {
           completeGeneration(false, err.message || 'Failed to start training images generation')
         })
       
-      // Poll for progress
+      // Poll for progress - check more frequently to show real progress
       let pollCount = 0
-      const maxPolls = 60
+      let lastTrainingCount = 0
+      const maxPolls = 120 // Increased to allow more time
+      const targetCount = 20 // Training images target
       const pollInterval = setInterval(async () => {
         pollCount++
-        const progress = Math.min(50 + (pollCount / maxPolls) * 45, 95)
-        updateGenerationProgress(progress)
-        addGenerationLog(`Checking progress... (${pollCount}/${maxPolls})`, 'info')
         
-        if (pollCount % 10 === 0) {
+        // Check progress every 2 polls (every ~6 seconds) instead of every 10
+        if (pollCount % 2 === 0) {
           try {
             const contentRes = await contentAPI.getByInfluencer(influencerId)
             if (contentRes.success) {
               const trainingCount = contentRes.data.filter(c => c && c.type === 'training_image').length
-              addGenerationLog(`Found ${trainingCount}/25 training images so far...`, 'info')
               
-              if (trainingCount >= 25) {
+              // Update progress based on actual images generated, not just poll count
+              const progress = Math.min(50 + (trainingCount / targetCount) * 45, 95)
+              updateGenerationProgress(progress)
+              
+              // Only log when count changes or every 5 checks
+              if (trainingCount !== lastTrainingCount || pollCount % 10 === 0) {
+                addGenerationLog(`Found ${trainingCount}/${targetCount} training images so far...`, 'info')
+                lastTrainingCount = trainingCount
+              }
+              
+              // Update state with current images - real-time update of grid
+              setGeneratedContent(contentRes.data || [])
+              const trainingImgs = contentRes.data
+                .filter(c => c && c.type === 'training_image') // Only training_image, exclude profile_image
+                .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
+              setTrainingImages(trainingImgs) // Update grid in real-time
+              
+              if (trainingCount >= targetCount) {
                 clearInterval(pollInterval)
-                setGeneratedContent(contentRes.data || [])
-                const trainingImgs = contentRes.data
-                  .filter(c => c.type === 'training_image' || c.type === 'profile_image')
-                  .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
-                setTrainingImages(trainingImgs)
+                console.log(`✅ Found ${trainingImgs.length} training images (excluding profile image)`)
                 
                 updateGenerationProgress(100)
                 completeGeneration(true, 'All images generated successfully!')
                 setGenerating(false)
-              } else {
-                setGeneratedContent(contentRes.data || [])
-                const trainingImgs = contentRes.data
-                  .filter(c => c.type === 'training_image' || c.type === 'profile_image')
-                  .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
-                setTrainingImages(trainingImgs)
+                
+                // Auto-close modal after 1.5 seconds
+                setTimeout(() => {
+                  setShowGenerationModal(false)
+                }, 1500)
               }
             }
           } catch (err) {
             console.error('Error checking progress:', err)
+            // Still update progress based on poll count as fallback
+            const fallbackProgress = Math.min(50 + (pollCount / maxPolls) * 45, 95)
+            updateGenerationProgress(fallbackProgress)
+            if (pollCount % 10 === 0) {
+              addGenerationLog(`Checking progress... (${pollCount}/${maxPolls})`, 'info')
+            }
           }
+        } else {
+          // On non-check polls, just update progress based on time
+          const timeBasedProgress = Math.min(50 + (pollCount / maxPolls) * 45, 95)
+          updateGenerationProgress(timeBasedProgress)
         }
         
         if (pollCount >= maxPolls) {
@@ -339,18 +432,185 @@ function Influencers() {
   }
 
   // Generate only training images (20 photos) with AI
+  const handleGenerateMissingTrainingImages = async () => {
+    if (!influencerName || !gender || !age) {
+      alert('Please fill in at least Name, Gender, and Age before generating')
+      return
+    }
+
+    const currentCount = trainingImages.length
+    const missingCount = 20 - currentCount
+
+    if (missingCount <= 0) {
+      alert('You already have 20 training images!')
+      return
+    }
+
+    setGenerating(true)
+    setTrainingImageMethod('ai')
+    // NO MODAL - just start generating in background
+    
+    try {
+      // Ensure influencer exists
+      let influencerId = currentInfluencerId
+      if (!influencerId) {
+        const newInfluencer = {
+          name: influencerName,
+          description: description || 'Content Creator',
+          gender,
+          age,
+          location: location || '',
+          hairColor: hairColor || '',
+          activities: activities || [],
+          settings: settings || [],
+          additionalInfo: additionalInfo || [],
+          clothingStyles: selectedStyles || [],
+          feedPosts: feedPosts || 0,
+          storyPosts: storyPosts || 0,
+          dailyContentEnabled: false,
+          trainingProgress: 0,
+          imagesLocked: 0,
+          stylesChosen: selectedStyles.length || 0
+        }
+        const createRes = await influencersAPI.create(newInfluencer)
+        influencerId = createRes.data.id
+        setCurrentInfluencerId(influencerId)
+      }
+
+      const influencerData = {
+        name: influencerName,
+        description,
+        gender,
+        age,
+        location,
+        hairColor,
+        activities,
+        settings,
+        clothingStyles: selectedStyles
+      }
+
+      // Generate only the missing number of training images
+      const influencerDataWithId = {
+        ...influencerData,
+        id: influencerId
+      }
+      
+      // Start generation in background (NO MODAL) - only generate missing count
+      aiAPI.generateTrainingImages(influencerDataWithId, missingCount)
+        .then(() => {
+          console.log(`✅ Started generation of ${missingCount} missing training images`)
+        })
+        .catch(err => {
+          console.error('Error starting generation:', err)
+          alert(`Failed to start generation: ${err.message}`)
+          setGenerating(false)
+        })
+      
+      // Poll for progress updates - update images grid in real-time
+      let pollCount = 0
+      let lastTrainingCount = currentCount
+      const maxPolls = 120
+      const targetCount = 20
+      
+      // Store interval in ref
+      trainingImagePollIntervalRef.current = setInterval(async () => {
+        pollCount++
+        
+        // Check progress every 2 seconds
+        try {
+          const contentRes = await contentAPI.getByInfluencer(influencerId)
+          if (contentRes.success) {
+            const trainingCount = contentRes.data.filter(c => c && c.type === 'training_image').length
+            
+            // Update images grid in real-time
+            setGeneratedContent(contentRes.data || [])
+            const trainingImgs = contentRes.data
+              .filter(c => c && c.type === 'training_image')
+              .sort((a, b) => {
+                // Sort by createdAt or id to maintain order
+                if (a.createdAt && b.createdAt) {
+                  return new Date(a.createdAt) - new Date(b.createdAt)
+                }
+                return (a.id || 0) - (b.id || 0)
+              })
+              .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
+            setTrainingImages(trainingImgs)
+            
+            if (trainingCount !== lastTrainingCount) {
+              console.log(`✅ Found ${trainingCount}/${targetCount} training images (${trainingCount - lastTrainingCount} new)`)
+              lastTrainingCount = trainingCount
+            }
+            
+            if (trainingCount >= targetCount) {
+              if (trainingImagePollIntervalRef.current) {
+                clearInterval(trainingImagePollIntervalRef.current)
+                trainingImagePollIntervalRef.current = null
+              }
+              
+              // Auto-update training progress
+              if (currentInfluencerId) {
+                const newProgress = calculateTrainingProgress()
+                try {
+                  await influencersAPI.update(influencerId, {
+                    trainingProgress: newProgress,
+                    imagesLocked: contentRes.data.filter(c => c && (c.type === 'training_image' || c.type === 'profile_image')).length
+                  })
+                } catch (err) {
+                  console.error('Error updating progress:', err)
+                }
+              }
+              
+              setGenerating(false)
+              console.log('✅ All 20 training images complete!')
+            }
+          }
+        } catch (err) {
+          console.error('Error checking progress:', err)
+        }
+        
+        // Stop polling after max attempts
+        if (pollCount >= maxPolls) {
+          if (trainingImagePollIntervalRef.current) {
+            clearInterval(trainingImagePollIntervalRef.current)
+            trainingImagePollIntervalRef.current = null
+          }
+          setGenerating(false)
+          console.log('⚠️ Polling timeout reached')
+        }
+      }, 2000) // Poll every 2 seconds for real-time updates
+    } catch (error) {
+      console.error('Error generating missing training images:', error)
+      alert(`Failed to generate: ${error.message}`)
+      setGenerating(false)
+      // Clear interval on error
+      if (trainingImagePollIntervalRef.current) {
+        clearInterval(trainingImagePollIntervalRef.current)
+        trainingImagePollIntervalRef.current = null
+      }
+    }
+  }
+
   const handleGenerateTrainingImages = async () => {
     if (!influencerName || !gender || !age) {
       alert('Please fill in at least Name, Gender, and Age before generating')
       return
     }
 
+    // Prevent multiple simultaneous generations
+    if (generating) {
+      alert('Generation already in progress. Please wait for the current generation to complete.')
+      return
+    }
+
+    // Clear any existing polling interval
+    if (trainingImagePollIntervalRef.current) {
+      clearInterval(trainingImagePollIntervalRef.current)
+      trainingImagePollIntervalRef.current = null
+    }
+
     setGenerating(true)
     setTrainingImageMethod('ai')
-    startGeneration('Generating 20 Training Images')
-    addGenerationLog(`Generating 20 training images for ${influencerName}...`, 'info')
-    addGenerationLog('This may take several minutes. Please wait...', 'info')
-    updateGenerationProgress(5)
+    // NO MODAL - just start generating in background
     
     try {
       // Ensure influencer exists
@@ -400,79 +660,86 @@ function Influencers() {
       addGenerationLog('Calling AI service to generate 20 training images...', 'info')
       updateGenerationProgress(10)
       
-      // Start generation in background
+      // Start generation in background (NO MODAL)
       aiAPI.generateTrainingImages(influencerDataWithId, 20)
         .then(() => {
-          addGenerationLog('AI generation request sent successfully', 'success')
-          updateGenerationProgress(30)
+          console.log('✅ Training images generation started')
         })
         .catch(err => {
-          addGenerationLog(`Error: ${err.message}`, 'error')
-          completeGeneration(false, err.message || 'Failed to start generation')
+          console.error('Error starting generation:', err)
+          alert(`Failed to start generation: ${err.message}`)
+          setGenerating(false)
         })
       
-      // Poll for progress updates
+      // Poll for progress updates - update images grid in real-time
       let pollCount = 0
-      const maxPolls = 60 // Poll for up to 3 minutes
-      const pollInterval = setInterval(async () => {
+      let lastTrainingCount = 0
+      const maxPolls = 120
+      const targetCount = 20
+      
+      // Store interval in ref so we can clear it if needed
+      trainingImagePollIntervalRef.current = setInterval(async () => {
         pollCount++
-        const progress = Math.min(30 + (pollCount / maxPolls) * 60, 90)
-        updateGenerationProgress(progress)
-        addGenerationLog(`Checking progress... (${pollCount}/${maxPolls})`, 'info')
         
-        // Check content every 10 polls (every 20 seconds)
-        if (pollCount % 10 === 0) {
-          try {
-            const contentRes = await contentAPI.getByInfluencer(influencerId)
-            if (contentRes.success) {
-              const trainingCount = contentRes.data.filter(c => c && c.type === 'training_image').length
-              addGenerationLog(`Found ${trainingCount}/20 training images so far...`, 'info')
-              
-              if (trainingCount >= 20) {
-                clearInterval(pollInterval)
-                setGeneratedContent(contentRes.data || [])
-                const trainingImgs = contentRes.data
-                  .filter(c => c.type === 'training_image')
-                  .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
-                setTrainingImages(trainingImgs)
-                
-                // Auto-update training progress
-                if (currentInfluencerId) {
-                  const newProgress = calculateTrainingProgress()
-                  try {
-                    await influencersAPI.update(influencerId, {
-                      trainingProgress: newProgress,
-                      imagesLocked: contentRes.data.filter(c => c && (c.type === 'training_image' || c.type === 'profile_image')).length
-                    })
-                  } catch (err) {
-                    console.error('Error updating progress:', err)
-                  }
+        // Check progress every 2 seconds
+        try {
+          const contentRes = await contentAPI.getByInfluencer(influencerId)
+          if (contentRes.success) {
+            const trainingCount = contentRes.data.filter(c => c && c.type === 'training_image').length
+            
+            // Update images grid in real-time
+            setGeneratedContent(contentRes.data || [])
+            const trainingImgs = contentRes.data
+              .filter(c => c && c.type === 'training_image')
+              .sort((a, b) => {
+                // Sort by createdAt or id to maintain order
+                if (a.createdAt && b.createdAt) {
+                  return new Date(a.createdAt) - new Date(b.createdAt)
                 }
-                
-                updateGenerationProgress(100)
-                completeGeneration(true, 'All 20 training images generated successfully!')
-                setGenerating(false)
-              } else {
-                setGeneratedContent(contentRes.data || [])
-                const trainingImgs = contentRes.data
-                  .filter(c => c.type === 'training_image')
-                  .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
-                setTrainingImages(trainingImgs)
-              }
+                return (a.id || 0) - (b.id || 0)
+              })
+              .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
+            setTrainingImages(trainingImgs)
+            
+            if (trainingCount !== lastTrainingCount) {
+              console.log(`✅ Found ${trainingCount}/${targetCount} training images (${trainingCount - lastTrainingCount} new)`)
+              lastTrainingCount = trainingCount
             }
-          } catch (err) {
-            console.error('Error checking progress:', err)
+            
+            if (trainingCount >= targetCount) {
+              if (trainingImagePollIntervalRef.current) {
+                clearInterval(trainingImagePollIntervalRef.current)
+                trainingImagePollIntervalRef.current = null
+              }
+              
+              // Auto-update training progress
+              if (currentInfluencerId) {
+                const newProgress = calculateTrainingProgress()
+                try {
+                  await influencersAPI.update(influencerId, {
+                    trainingProgress: newProgress,
+                    imagesLocked: contentRes.data.filter(c => c && (c.type === 'training_image' || c.type === 'profile_image')).length
+                  })
+                } catch (err) {
+                  console.error('Error updating progress:', err)
+                }
+              }
+              
+              setGenerating(false)
+              console.log('✅ All 20 training images generated!')
+            }
           }
+        } catch (err) {
+          console.error('Error checking progress:', err)
         }
         
         // Stop polling after max attempts
         if (pollCount >= maxPolls) {
           clearInterval(pollInterval)
-          addGenerationLog('Generation is taking longer than expected. Images may still be generating in the background.', 'warning')
-          completeGeneration(true, 'Generation started. Check "Generated Content" to see results as they appear.')
           setGenerating(false)
+          console.log('⚠️ Polling timeout reached')
         }
-      }, 3000) // Poll every 3 seconds
+      }, 2000) // Poll every 2 seconds for real-time updates
       
     } catch (error) {
       console.error('Error generating training images:', error)
@@ -978,8 +1245,18 @@ function Influencers() {
   }
 
   const handleStyleClick = (styleName) => {
-    // If already selected, just toggle it off
-    if (selectedStyles.includes(styleName)) {
+    // Check if there's already an image for this style
+    const styleImages = generatedContent.filter(
+      c => c && c.type === 'style_image' && c.style === styleName
+    )
+    const hasExistingImage = styleImages.length > 0
+    
+    // If already selected and has image, open modal with regenerate option
+    if (selectedStyles.includes(styleName) && hasExistingImage) {
+      setSelectedStyleForModal(styleName)
+      setStyleModalOpen(true)
+    } else if (selectedStyles.includes(styleName)) {
+      // If selected but no image, just toggle it off
       toggleStyle(styleName)
     } else {
       // Open modal to choose upload or AI generation
@@ -988,7 +1265,242 @@ function Influencers() {
     }
   }
 
-  const handleGenerateStyleImages = async (styleName) => {
+  const handleTrainingImageClick = (content) => {
+    setSelectedTrainingImage(content)
+    setCustomPrompt(content.prompt || '')
+    setTrainingImageModalOpen(true)
+  }
+
+  // Emily Pellegrini Strategy - Auto-fill fields with optimized values
+  const applyEmilyPellegriniStrategy = () => {
+    // Set optimal values based on Emily's success
+    if (!description) setDescription('Content Creator & Lifestyle Influencer')
+    if (!gender || gender !== 'Female') setGender('Female')
+    if (!age || age !== 24) setAge(24)
+    if (!location) setLocation('Luxury destinations worldwide')
+    if (!hairColor) setHairColor('long brown hair')
+    
+    // Emily's successful activities
+    const emilyActivities = [
+      'traveling and exploring new destinations',
+      'working out at the gym',
+      'enjoying luxury dining experiences',
+      'relaxing at beautiful beaches',
+      'shopping for fashion',
+      'attending social events',
+      'practicing yoga and wellness',
+      'exploring city nightlife',
+      'visiting spas and wellness centers',
+      'photoshoots in exotic locations'
+    ]
+    if (activities.length === 0) setActivities(emilyActivities)
+    
+    // Emily's successful settings
+    const emilySettings = [
+      'luxury hotel rooms with city views',
+      'upscale restaurants and bars',
+      'beautiful beaches and resorts',
+      'modern gyms and fitness studios',
+      'boutique shopping districts',
+      'penthouse apartments',
+      'luxury spas',
+      'exotic travel destinations',
+      'rooftop terraces',
+      'boudoir settings with natural lighting'
+    ]
+    if (settings.length === 0) setSettings(emilySettings)
+    
+    // Additional info for better prompts
+    const emilyInfo = [
+      'sexy and alluring',
+      'tasteful and elegant',
+      'confident and sophisticated',
+      'natural and authentic',
+      'high-end lifestyle',
+      'professional photography quality'
+    ]
+    if (additionalInfo.length === 0) setAdditionalInfo(emilyInfo)
+    
+    // Select popular styles if none selected
+    if (selectedStyles.length === 0) {
+      setSelectedStyles(['LINGERIE', 'GLAM/ELEGANT', 'CASUAL', 'SPORTY'])
+    }
+    
+    setUsingEmilyStrategy(true)
+    alert('✅ Emily Pellegrini Strategy applied! Fields have been optimized for maximum success.')
+  }
+
+  // Generate preview prompts for training images
+  const generatePromptPreview = () => {
+    if (!influencerName || !gender || !age) {
+      alert('Please fill in at least Name, Gender, and Age before previewing prompts')
+      return
+    }
+
+    const prompts = []
+    const trainingImagePrompts = [
+      { outfit: 'black lace lingerie set', setting: 'luxury bedroom with silk sheets', pose: 'sitting on bed, looking at camera seductively' },
+      { outfit: 'red satin bra and panties', setting: 'boudoir with dim lighting', pose: 'leaning against mirror, confident pose' },
+      { outfit: 'white lace bodysuit', setting: 'modern apartment with city view', pose: 'standing by window, natural lighting' },
+      { outfit: 'black leather corset with stockings', setting: 'dark elegant room', pose: 'sitting on chair, legs crossed, alluring look' },
+      { outfit: 'sexy red dress with high heels', setting: 'luxury hotel room', pose: 'standing pose, hand on hip' },
+      { outfit: 'black mesh bodysuit', setting: 'studio with dramatic lighting', pose: 'artistic pose, looking away' },
+      { outfit: 'white silk robe open, matching lingerie underneath', setting: 'spa-like bathroom', pose: 'leaning on vanity, relaxed' },
+      { outfit: 'black lace teddy with garter belt', setting: 'bedroom with candlelight', pose: 'lying on bed, playful pose' },
+      { outfit: 'sexy workout set, sports bra and leggings', setting: 'modern gym', pose: 'stretching pose, athletic' },
+      { outfit: 'black silk slip dress', setting: 'penthouse with city lights', pose: 'standing by balcony, elegant' },
+      { outfit: 'red lace bralette and thong', setting: 'luxury hotel suite', pose: 'sitting on edge of bed, confident' },
+      { outfit: 'white lace babydoll nightie', setting: 'bright bedroom with natural light', pose: 'laying on bed, innocent yet sexy' },
+      { outfit: 'black leather jacket open, red lingerie underneath', setting: 'urban loft', pose: 'leaning against wall, edgy' },
+      { outfit: 'sexy black bodysuit with cutouts', setting: 'nightclub bathroom', pose: 'mirror selfie style, sultry' },
+      { outfit: 'pink satin lingerie set', setting: 'boudoir with soft lighting', pose: 'sitting on chaise lounge, elegant' },
+      { outfit: 'black mesh top with leather pants', setting: 'modern apartment', pose: 'standing pose, confident and bold' },
+      { outfit: 'white lace chemise', setting: 'luxury bedroom with flowers', pose: 'sitting on bed, romantic and sensual' },
+      { outfit: 'red corset with black stockings', setting: 'vintage styled room', pose: 'posing on vintage chair, classic pin-up style' },
+      { outfit: 'sexy black lace bra and panty set', setting: 'hotel room with city view', pose: 'standing by window, silhouette' },
+      { outfit: 'nude colored lace bodysuit', setting: 'minimalist modern bedroom', pose: 'artistic nude-inspired pose, tasteful' }
+    ]
+
+    for (let i = 0; i < 20; i++) {
+      const trainingPrompt = trainingImagePrompts[i]
+      let prompt = `portrait photo of ${gender.toLowerCase()}, ${age} years old`
+      
+      if (hairColor) {
+        prompt += `, ${hairColor} hair`
+      } else if (usingEmilyStrategy) {
+        prompt += `, long brown hair`
+      }
+      
+      prompt += `, wearing ${trainingPrompt.outfit}, in ${trainingPrompt.setting}, ${trainingPrompt.pose}`
+      
+      if (activities && activities.length > 0) {
+        prompt += `, ${activities[0].toLowerCase()}`
+      }
+      
+      prompt += `, professional photography, high quality, detailed, 8k, realistic, natural lighting, sexy, alluring, tasteful`
+      
+      prompts.push({
+        number: i + 1,
+        prompt: prompt,
+        outfit: trainingPrompt.outfit,
+        setting: trainingPrompt.setting,
+        pose: trainingPrompt.pose
+      })
+    }
+
+    setPreviewPrompts(prompts)
+    setShowPromptPreview(true)
+  }
+
+  const handleRegenerateTrainingImage = async () => {
+    if (!selectedTrainingImage || !influencerName || !gender || !age) {
+      alert('Please fill in at least Name, Gender, and Age before regenerating')
+      setTrainingImageModalOpen(false)
+      return
+    }
+
+    if (regeneratingTrainingImage) {
+      console.log('⚠️ Regeneration already in progress')
+      return
+    }
+
+    setRegeneratingTrainingImage(true)
+    setTrainingImageModalOpen(false)
+
+    try {
+      const influencerId = currentInfluencerId
+      if (!influencerId) {
+        alert('Please save the influencer first')
+        setRegeneratingTrainingImage(false)
+        return
+      }
+
+      // Delete the existing training image
+      try {
+        await contentAPI.delete(selectedTrainingImage.id)
+        console.log('✅ Deleted existing training image')
+      } catch (err) {
+        console.error('Error deleting image:', err)
+      }
+
+      // Generate new training image with custom prompt if provided
+      const influencerData = {
+        name: influencerName,
+        description,
+        gender,
+        age,
+        location,
+        hairColor,
+        activities,
+        settings,
+        clothingStyles: selectedStyles
+      }
+
+      const influencerDataWithId = {
+        ...influencerData,
+        id: influencerId
+      }
+
+      // Generate 1 training image with custom prompt
+      if (customPrompt.trim()) {
+        // If custom prompt is provided, we need to modify the AI service to accept it
+        // For now, we'll generate normally and update the prompt after
+        await aiAPI.generateTrainingImages(influencerDataWithId, 1)
+      } else {
+        await aiAPI.generateTrainingImages(influencerDataWithId, 1)
+      }
+
+      // Poll for the new image
+      let pollCount = 0
+      const maxPolls = 30
+      const pollInterval = setInterval(async () => {
+        pollCount++
+        
+        try {
+          const contentRes = await contentAPI.getByInfluencer(influencerId)
+          if (contentRes.success) {
+            const trainingImages = contentRes.data.filter(c => c && c.type === 'training_image')
+            
+            // Update state
+            setGeneratedContent(contentRes.data || [])
+            const trainingImgs = trainingImages
+              .map(c => c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
+            setTrainingImages(trainingImgs)
+
+            // If we have a new image and custom prompt, update the prompt
+            if (customPrompt.trim() && trainingImages.length > 0) {
+              const newImage = trainingImages[trainingImages.length - 1]
+              try {
+                // Update the prompt via API
+                await contentAPI.update(newImage.id, { prompt: customPrompt.trim() })
+                console.log('✅ Updated prompt for image:', newImage.id)
+              } catch (err) {
+                console.error('Error updating prompt:', err)
+              }
+            }
+
+            if (trainingImages.length > 0 || pollCount >= maxPolls) {
+              clearInterval(pollInterval)
+              setRegeneratingTrainingImage(false)
+              console.log('✅ Training image regeneration complete')
+            }
+          }
+        } catch (err) {
+          console.error('Error checking progress:', err)
+          if (pollCount >= maxPolls) {
+            clearInterval(pollInterval)
+            setRegeneratingTrainingImage(false)
+          }
+        }
+      }, 2000)
+    } catch (error) {
+      console.error('Error regenerating training image:', error)
+      alert(`Failed to regenerate: ${error.message}`)
+      setRegeneratingTrainingImage(false)
+    }
+  }
+
+  const handleRegenerateStyleImages = async (styleName) => {
     if (!influencerName || !gender || !age) {
       alert('Please fill in at least Name, Gender, and Age before generating')
       setStyleModalOpen(false)
@@ -1002,26 +1514,90 @@ function Influencers() {
       return
     }
 
-    // Check if images already exist for this style
     const influencerId = currentInfluencerId
-    if (influencerId) {
-      try {
-        const contentRes = await contentAPI.getByInfluencer(influencerId)
-        if (contentRes.success) {
-          const existingStyleImages = contentRes.data.filter(
-            c => c && c.type === 'style_image' && c.style === styleName
-          )
-          if (existingStyleImages.length > 0) {
-            const confirm = window.confirm(
-              `You already have ${existingStyleImages.length} image(s) for ${styleName} style. Do you want to generate another one?`
-            )
-            if (!confirm) {
-              return
+    if (!influencerId) {
+      alert('Please save the influencer first')
+      return
+    }
+
+    setStyleModalOpen(false)
+    startGeneration(`Regenerating ${styleName} Style`)
+    addGenerationLog(`Removing existing images for ${styleName} style...`, 'info')
+    
+    // Find and delete existing style images for this style
+    try {
+      const contentRes = await contentAPI.getByInfluencer(influencerId)
+      if (contentRes.success) {
+        const existingStyleImages = contentRes.data.filter(
+          c => c && c.type === 'style_image' && c.style === styleName
+        )
+        
+        if (existingStyleImages.length > 0) {
+          addGenerationLog(`Found ${existingStyleImages.length} existing image(s) to remove...`, 'info')
+          
+          // Delete all existing style images for this style
+          for (const image of existingStyleImages) {
+            try {
+              await contentAPI.delete(image.id)
+              addGenerationLog(`✅ Deleted old image (ID: ${image.id})`, 'success')
+            } catch (err) {
+              console.error('Error deleting old image:', err)
+              addGenerationLog(`⚠️ Could not delete old image (ID: ${image.id})`, 'warning')
             }
           }
+          
+          // Update generatedContent state
+          const updatedContent = generatedContent.filter(c => 
+            !(c && c.type === 'style_image' && c.style === styleName)
+          )
+          setGeneratedContent(updatedContent)
         }
-      } catch (err) {
-        console.error('Error checking existing images:', err)
+      }
+    } catch (err) {
+      console.error('Error checking/deleting existing images:', err)
+      addGenerationLog('⚠️ Could not check for existing images', 'warning')
+    }
+
+    // Now generate new image (without checking for existing)
+    await handleGenerateStyleImages(styleName, false)
+  }
+
+  const handleGenerateStyleImages = async (styleName, checkExisting = true) => {
+    if (!influencerName || !gender || !age) {
+      alert('Please fill in at least Name, Gender, and Age before generating')
+      setStyleModalOpen(false)
+      return
+    }
+
+    // Prevent multiple simultaneous calls
+    if (generatingStyleImages) {
+      console.log('⚠️ Generation already in progress, ignoring duplicate call')
+      alert('Generation already in progress. Please wait...')
+      return
+    }
+
+    // Check if images already exist for this style (only if checkExisting is true)
+    if (checkExisting) {
+      const influencerId = currentInfluencerId
+      if (influencerId) {
+        try {
+          const contentRes = await contentAPI.getByInfluencer(influencerId)
+          if (contentRes.success) {
+            const existingStyleImages = contentRes.data.filter(
+              c => c && c.type === 'style_image' && c.style === styleName
+            )
+            if (existingStyleImages.length > 0) {
+              const confirm = window.confirm(
+                `You already have ${existingStyleImages.length} image(s) for ${styleName} style. Do you want to generate another one?`
+              )
+              if (!confirm) {
+                return
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error checking existing images:', err)
+        }
       }
     }
 
@@ -1110,46 +1686,90 @@ function Influencers() {
         }
       }
       
-      // Poll for progress
+      // Poll for progress - we're only generating 1 image, so check more frequently
       let pollCount = 0
-      const maxPolls = 40
+      const maxPolls = 20 // Reduced since we only need 1 image
       const pollInterval = setInterval(async () => {
         pollCount++
-        const progress = Math.min(40 + (pollCount / maxPolls) * 50, 90)
+        const progress = Math.min(40 + (pollCount / maxPolls) * 55, 95)
         updateGenerationProgress(progress)
-        addGenerationLog(`Checking progress... (${pollCount}/${maxPolls})`, 'info')
         
-        if (pollCount % 5 === 0) {
+        // Check every 2 polls (every 6 seconds) for the style image
+        if (pollCount % 2 === 0) {
           try {
             const contentRes = await contentAPI.getByInfluencer(influencerId)
             if (contentRes.success) {
               setGeneratedContent(contentRes.data || [])
               
-              // Auto-update training progress
-              if (currentInfluencerId) {
-                const newProgress = calculateTrainingProgress()
-                try {
-                  await influencersAPI.update(influencerId, {
-                    trainingProgress: newProgress,
-                    imagesLocked: contentRes.data.filter(c => c && (c.type === 'training_image' || c.type === 'profile_image')).length
-                  })
-                } catch (err) {
-                  console.error('Error updating progress:', err)
+              // Check specifically for style_image with this style
+              const styleImages = contentRes.data.filter(
+                c => c && c.type === 'style_image' && c.style === styleName
+              )
+              
+              if (styleImages.length >= 1) {
+                // Found the style image! Complete the generation
+                clearInterval(pollInterval)
+                addGenerationLog(`✅ Found ${styleImages.length} image(s) for ${styleName} style!`, 'success')
+                
+                // Auto-update training progress
+                if (currentInfluencerId) {
+                  const newProgress = calculateTrainingProgress()
+                  try {
+                    await influencersAPI.update(influencerId, {
+                      trainingProgress: newProgress,
+                      imagesLocked: contentRes.data.filter(c => c && (c.type === 'training_image' || c.type === 'profile_image' || c.type === 'style_image')).length
+                    })
+                  } catch (err) {
+                    console.error('Error updating progress:', err)
+                  }
                 }
+                
+                updateGenerationProgress(100)
+                completeGeneration(true, `Successfully generated ${styleName} style image!`)
+                setGeneratingStyleImages(false)
+                
+                // Auto-close modal after 1.5 seconds and scroll to Step 4
+                setTimeout(() => {
+                  setShowGenerationModal(false)
+                  // Scroll to Step 4 after modal closes
+                  setTimeout(() => {
+                    if (step4Ref.current) {
+                      step4Ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }
+                  }, 100)
+                }, 1500)
+                return
+              } else {
+                addGenerationLog(`Checking for ${styleName} style image... (${pollCount}/${maxPolls})`, 'info')
               }
             }
           } catch (err) {
             console.error('Error checking progress:', err)
+            addGenerationLog(`Error checking progress: ${err.message}`, 'warning')
           }
+        } else {
+          addGenerationLog(`Waiting for image... (${pollCount}/${maxPolls})`, 'info')
         }
         
+        // Timeout after max polls
         if (pollCount >= maxPolls) {
           clearInterval(pollInterval)
-          addGenerationLog('Generation started. Images may still be generating in the background.', 'info')
-          completeGeneration(true, `Generation started for ${styleName} style! Check "Generated Content" to see results.`)
+          addGenerationLog('Generation is taking longer than expected. The image may still be generating in the background.', 'warning')
+          completeGeneration(true, `Generation started for ${styleName} style. Check "Generated Content" to see the result when it's ready.`)
           setGeneratingStyleImages(false)
+          
+          // Auto-close modal after 2 seconds and scroll to Step 4
+          setTimeout(() => {
+            setShowGenerationModal(false)
+            // Scroll to Step 4 after modal closes
+            setTimeout(() => {
+              if (step4Ref.current) {
+                step4Ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            }, 100)
+          }, 2000)
         }
-      }, 3000)
+      }, 3000) // Poll every 3 seconds
       
     } catch (error) {
       console.error('Error generating style images:', error)
@@ -1262,6 +1882,11 @@ function Influencers() {
           
           updateGenerationProgress(100)
           completeGeneration(true, 'Profile image generated and saved successfully!')
+          
+          // Auto-close modal after 1.5 seconds
+          setTimeout(() => {
+            setShowGenerationModal(false)
+          }, 1500)
         } catch (err) {
           console.error('Error updating influencer:', err)
           completeGeneration(false, 'Profile image generated but failed to save. Please try again.')
@@ -1535,8 +2160,21 @@ function Influencers() {
 
               {/* Step 1: Basics */}
               <div className="bg-dark-surface rounded-lg p-6 border border-gray-800/50">
-                <h3 className="text-lg font-semibold text-white mb-4">STEP 1: Basics</h3>
-                <p className="text-sm text-gray-400 mb-6">Name your influencer and add a short description</p>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">STEP 1: Basics</h3>
+                    <p className="text-sm text-gray-400 mt-1">Name your influencer and add a short description</p>
+                  </div>
+                  {!isEditMode && (
+                    <button
+                      onClick={applyEmilyPellegriniStrategy}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg shadow-purple-600/30 border border-purple-400/20"
+                    >
+                      <HiOutlineSparkles className="w-5 h-5" />
+                      <span>Apply Emily Strategy</span>
+                    </button>
+                  )}
+                </div>
                 
                 <div className="space-y-4">
                   <div>
@@ -1870,9 +2508,63 @@ function Influencers() {
               <div className="bg-dark-surface rounded-lg p-6 border border-gray-800/50">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white">STEP 3: Training Images</h3>
+                  {isEditMode && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const influencerId = currentInfluencerId || (editId ? parseInt(editId) : null)
+                          if (!influencerId) {
+                            alert('No influencer ID found')
+                            return
+                          }
+                          const contentRes = await contentAPI.getByInfluencer(influencerId)
+                          if (contentRes.success && contentRes.data) {
+                            const contentArray = Array.isArray(contentRes.data) ? contentRes.data : []
+                            const trainingImgs = contentArray
+                              .filter(c => c && c.type === 'training_image')
+                              .sort((a, b) => {
+                                if (a.createdAt && b.createdAt) {
+                                  return new Date(a.createdAt) - new Date(b.createdAt)
+                                }
+                                return (a.id || 0) - (b.id || 0)
+                              })
+                              .map(c => c.url && c.url.startsWith('http') ? c.url : `http://localhost:3001${c.url}`)
+                            setGeneratedContent(contentArray)
+                            setTrainingImages(trainingImgs)
+                            console.log(`✅ Refreshed: Found ${trainingImgs.length} training images`)
+                            if (trainingImgs.length > 0) {
+                              alert(`✅ Refreshed! Found ${trainingImgs.length} training images.`)
+                            } else {
+                              alert('No training images found yet. They may still be generating.')
+                            }
+                          }
+                        } catch (err) {
+                          console.error('Error refreshing:', err)
+                          alert('Error refreshing content')
+                        }
+                      }}
+                      className="bg-dark-card hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors border border-gray-800/30 flex items-center space-x-2"
+                    >
+                      <HiOutlineRefresh className="w-4 h-4" />
+                      <span>Refresh</span>
+                    </button>
+                  )}
                 </div>
                 
                 <p className="text-sm text-gray-400 mb-6">You need 20 training images. Choose one of the options below:</p>
+
+                {/* Preview Prompts Button */}
+                {!trainingImageMethod && trainingImages.length === 0 && (
+                  <div className="mb-4">
+                    <button
+                      onClick={generatePromptPreview}
+                      className="bg-dark-card hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors border border-gray-800/30 flex items-center space-x-2"
+                    >
+                      <HiOutlineEye className="w-5 h-5" />
+                      <span>Preview Prompts Before Generation</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Two Options */}
                 {!trainingImageMethod && trainingImages.length === 0 && (
@@ -1931,96 +2623,245 @@ function Influencers() {
                   </div>
                 )}
 
-                {isEditMode && trainingImages.length > 0 && (
+                {isEditMode && trainingImages.length > 0 && trainingImages.length < 20 && (
+                  <div className="mb-4 p-4 bg-orange-500/20 border border-orange-500/30 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-orange-400 font-medium mb-1">
+                          Missing {20 - trainingImages.length} training image(s)
+                        </p>
+                        <p className="text-xs text-orange-300">
+                          Generate only the missing images to complete your training set
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleGenerateMissingTrainingImages}
+                        disabled={generating}
+                        className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-lg shadow-orange-600/30 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2"
+                      >
+                        <HiOutlineSparkles className="w-5 h-5" />
+                        <span>{generating ? 'Generating...' : `Generate ${20 - trainingImages.length} Missing`}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {isEditMode && trainingImages.length > 0 && trainingImages.length === 20 && (
                   <p className="text-sm text-yellow-400 mb-4">Images cannot be modified in edit mode</p>
                 )}
 
                 <div className="grid grid-cols-4 gap-3">
-                  {trainingImages.length > 0 ? (
-                    trainingImages.map((img, i) => (
-                      <div key={i} className="aspect-square bg-dark-card rounded-lg border border-gray-800/30 overflow-hidden">
-                        <img src={img} alt={`Training ${i + 1}`} className="w-full h-full object-cover" />
+                  {Array.from({ length: 20 }).map((_, i) => {
+                    const hasImage = i < trainingImages.length
+                    // Show loading on the first empty slot when generating
+                    const isLoading = generating && !hasImage && i === trainingImages.length
+                    
+                    // Find the content object for this image
+                    const trainingImageContent = hasImage 
+                      ? generatedContent
+                          .filter(c => c && c.type === 'training_image')
+                          .sort((a, b) => {
+                            if (a.createdAt && b.createdAt) {
+                              return new Date(a.createdAt) - new Date(b.createdAt)
+                            }
+                            return (a.id || 0) - (b.id || 0)
+                          })[i]
+                      : null
+                    
+                    return (
+                      <div 
+                        key={i} 
+                        className={`aspect-square bg-dark-card rounded-lg border border-gray-800/30 overflow-hidden relative ${
+                          hasImage ? 'cursor-pointer hover:border-purple-500/50 transition-all' : ''
+                        }`}
+                        onClick={() => {
+                          if (hasImage && trainingImageContent) {
+                            setSelectedTrainingImage(trainingImageContent)
+                            setCustomPrompt(trainingImageContent.prompt || '')
+                            setTrainingImageModalOpen(true)
+                          }
+                        }}
+                      >
+                        {hasImage ? (
+                          <>
+                            <img 
+                              src={trainingImages[i]} 
+                              alt={`Training ${i + 1}`} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none'
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
+                              <span className="text-white text-sm font-medium">Click to view/edit</span>
+                            </div>
+                          </>
+                        ) : isLoading ? (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border-2 border-purple-500/50">
+                            <div className="flex flex-col items-center space-y-2">
+                              <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                              <span className="text-xs text-purple-400 font-medium">Generating...</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+                            <span className="text-2xl opacity-50">📷</span>
+                          </div>
+                        )}
                       </div>
-                    ))
-                  ) : (
-                    Array.from({ length: 20 }).map((_, i) => (
-                      <div key={i} className="aspect-square bg-dark-card rounded-lg border border-gray-800/30 flex items-center justify-center overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                          <span className="text-2xl">📷</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                    )
+                  })}
                 </div>
               </div>
 
               {/* Step 4: Clothing Style */}
-              <div className="bg-dark-surface rounded-lg p-6 border border-gray-800/50">
+              <div ref={step4Ref} className="bg-dark-surface rounded-lg p-6 border border-gray-800/50">
                 <h3 className="text-lg font-semibold text-white mb-4">STEP 4: Clothing Style</h3>
                 <p className="text-sm text-gray-400 mb-6">Style (Select up to 4)</p>
                 <div className="grid grid-cols-3 gap-4">
-                  {clothingStyles.map((style) => (
-                    <button
-                      key={style.name}
-                      onClick={() => handleStyleClick(style.name)}
-                      className={`relative aspect-square bg-dark-card rounded-full border-2 flex flex-col items-center justify-center transition-all ${
-                        selectedStyles.includes(style.name)
-                          ? 'border-purple-500 ring-2 ring-purple-500/50'
-                          : 'border-gray-800/30 hover:border-gray-600'
-                      }`}
-                    >
-                      <span className="text-4xl mb-2">{style.image}</span>
-                      <span className="text-xs text-white font-medium">{style.name}</span>
-                      {selectedStyles.includes(style.name) && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                          <HiCheckCircle className="w-4 h-4 text-white" />
+                  {clothingStyles.map((style) => {
+                    // Find the generated image for this EXACT style (case-sensitive, exact match)
+                    // CRITICAL: Only get ONE image per style - NEVER combine multiple images
+                    const styleImages = generatedContent.filter(
+                      c => c && 
+                           c.type === 'style_image' && 
+                           c.style && 
+                           String(c.style).trim().toUpperCase() === String(style.name).trim().toUpperCase()
+                    )
+                    
+                    // Get ONLY the FIRST (oldest) image for this style
+                    // NEVER combine or show multiple images - always just ONE single image
+                    const styleImage = styleImages.length > 0 
+                      ? styleImages.sort((a, b) => {
+                          // Sort by createdAt (oldest first) or by id (lowest first) to get the original
+                          if (a.createdAt && b.createdAt) {
+                            return new Date(a.createdAt) - new Date(b.createdAt)
+                          }
+                          return (a.id || 0) - (b.id || 0)
+                        })[0] // ALWAYS take only the first one - NEVER combine multiple images
+                      : null
+                    
+                    // Log to ensure we're only using one image
+                    if (styleImages.length > 1) {
+                      console.warn(`⚠️ Found ${styleImages.length} images for style "${style.name}", using only the oldest one (ID: ${styleImage?.id}). Others will be ignored.`)
+                    }
+                    
+                    // Get the URL for ONLY this one image
+                    const imageUrl = styleImage?.url 
+                      ? (styleImage.url.startsWith('http') 
+                          ? styleImage.url 
+                          : `http://localhost:3001${styleImage.url}`)
+                      : null
+                    
+                    return (
+                      <button
+                        key={style.name}
+                        onClick={() => handleStyleClick(style.name)}
+                        className={`relative aspect-square bg-dark-card rounded-full border-2 flex flex-col items-center justify-center transition-all overflow-hidden ${
+                          selectedStyles.includes(style.name)
+                            ? 'border-purple-500 ring-2 ring-purple-500/50'
+                            : 'border-gray-800/30 hover:border-gray-600'
+                        }`}
+                      >
+                        {/* CRITICAL: Only render ONE image - never multiple */}
+                        {imageUrl ? (
+                          <img 
+                            key={`style-img-${styleImage.id}`} // Use unique key to prevent multiple renders
+                            src={imageUrl} 
+                            alt={style.name}
+                            className="w-full h-full object-cover rounded-full"
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} // Ensure only one image is visible
+                            onError={(e) => {
+                              // If image fails to load, hide it and show text instead
+                              e.target.style.display = 'none'
+                              const parent = e.target.parentElement
+                              if (parent) {
+                                const fallback = parent.querySelector('.style-fallback')
+                                if (fallback) fallback.style.display = 'flex'
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div className={`w-full h-full flex items-center justify-center ${imageUrl ? 'hidden style-fallback' : ''}`}>
+                          <span className="text-xs text-gray-500 font-medium">{style.name}</span>
                         </div>
-                      )}
-                    </button>
-                  ))}
+                        {selectedStyles.includes(style.name) && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center z-10 shadow-lg">
+                            <HiCheckCircle className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
               {/* Style Selection Modal */}
-              {styleModalOpen && selectedStyleForModal && (
-                <div 
-                  className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-                  onClick={(e) => {
-                    if (e.target === e.currentTarget) {
-                      setStyleModalOpen(false)
-                    }
-                  }}
-                >
-                  <div className="relative bg-dark-surface backdrop-blur-xl rounded-2xl p-8 max-w-md w-full border border-white/10">
-                    {/* Close Button */}
-                    <button
-                      onClick={() => setStyleModalOpen(false)}
-                      className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
-                    >
-                      <HiX className="w-6 h-6" />
-                    </button>
-
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      Add {selectedStyleForModal} Style
-                    </h3>
-                    <p className="text-sm text-gray-400 mb-6">
-                      Choose how you want to add images for this style
-                    </p>
-
-                    <div className="space-y-4">
-                      {/* Option 1: Generate with AI */}
+              {styleModalOpen && selectedStyleForModal && (() => {
+                // Check if there's already an image for this style
+                const existingStyleImages = generatedContent.filter(
+                  c => c && c.type === 'style_image' && c.style === selectedStyleForModal
+                )
+                const hasExistingImage = existingStyleImages.length > 0
+                
+                return (
+                  <div 
+                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) {
+                        setStyleModalOpen(false)
+                      }
+                    }}
+                  >
+                    <div className="relative bg-dark-surface backdrop-blur-xl rounded-2xl p-8 max-w-md w-full border border-white/10">
+                      {/* Close Button */}
                       <button
-                        onClick={() => handleGenerateStyleImages(selectedStyleForModal)}
-                        disabled={generatingStyleImages}
-                        className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 shadow-lg shadow-purple-600/30 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex flex-col items-center justify-center space-y-2 border border-purple-400/20"
+                        onClick={() => setStyleModalOpen(false)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
                       >
-                        <HiOutlineSparkles className="w-8 h-8" />
-                        <span className="text-lg">Generate with AI</span>
-                        <span className="text-sm text-purple-100">AI will create images based on your profile and {selectedStyleForModal} style</span>
-                        {generatingStyleImages && (
-                          <span className="text-sm text-purple-200">Generating...</span>
-                        )}
+                        <HiX className="w-6 h-6" />
                       </button>
+
+                      <h3 className="text-2xl font-bold text-white mb-2">
+                        {hasExistingImage ? 'Regenerate' : 'Add'} {selectedStyleForModal} Style
+                      </h3>
+                      <p className="text-sm text-gray-400 mb-6">
+                        {hasExistingImage 
+                          ? `You already have ${existingStyleImages.length} image(s) for this style. Choose an option:`
+                          : 'Choose how you want to add images for this style'
+                        }
+                      </p>
+
+                      <div className="space-y-4">
+                        {hasExistingImage && (
+                          /* Option 0: Regenerate with AI (replaces existing) */
+                          <button
+                            onClick={() => handleRegenerateStyleImages(selectedStyleForModal)}
+                            disabled={generatingStyleImages}
+                            className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-lg shadow-orange-600/30 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex flex-col items-center justify-center space-y-2 border border-orange-400/20"
+                          >
+                            <HiOutlineRefresh className="w-8 h-8" />
+                            <span className="text-lg">Regenerate with AI</span>
+                            <span className="text-sm text-orange-100">Replace existing image(s) with a new AI-generated image</span>
+                            {generatingStyleImages && (
+                              <span className="text-sm text-orange-200">Regenerating...</span>
+                            )}
+                          </button>
+                        )}
+                        
+                        {/* Option 1: Generate with AI */}
+                        <button
+                          onClick={() => handleGenerateStyleImages(selectedStyleForModal)}
+                          disabled={generatingStyleImages}
+                          className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 shadow-lg shadow-purple-600/30 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex flex-col items-center justify-center space-y-2 border border-purple-400/20"
+                        >
+                          <HiOutlineSparkles className="w-8 h-8" />
+                          <span className="text-lg">{hasExistingImage ? 'Generate Another' : 'Generate with AI'}</span>
+                          <span className="text-sm text-purple-100">AI will create images based on your profile and {selectedStyleForModal} style</span>
+                          {generatingStyleImages && (
+                            <span className="text-sm text-purple-200">Generating...</span>
+                          )}
+                        </button>
 
                       {/* Option 2: Upload */}
                       <label className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-600/30 cursor-pointer text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex flex-col items-center justify-center space-y-2 border border-blue-400/20">
@@ -2046,7 +2887,150 @@ function Influencers() {
                     </div>
                   </div>
                 </div>
+                )
+              })()}
+
+              {/* Prompt Preview Modal */}
+              {showPromptPreview && previewPrompts.length > 0 && (
+                <div 
+                  className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                      setShowPromptPreview(false)
+                    }
+                  }}
+                >
+                  <div className="relative bg-dark-surface backdrop-blur-xl rounded-2xl p-8 max-w-4xl w-full border border-white/10 max-h-[90vh] overflow-hidden flex flex-col">
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setShowPromptPreview(false)}
+                      className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
+                    >
+                      <HiX className="w-6 h-6" />
+                    </button>
+
+                    <h3 className="text-2xl font-bold text-white mb-2">Training Image Prompts Preview</h3>
+                    <p className="text-sm text-gray-400 mb-6">
+                      Review the prompts that will be used to generate your 20 training images. These are optimized based on your profile data.
+                    </p>
+
+                    {/* Prompts List */}
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                      {previewPrompts.map((item) => (
+                        <div key={item.number} className="bg-dark-card rounded-lg p-4 border border-gray-800/30">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="bg-purple-500/20 text-purple-400 px-2 py-1 rounded text-xs font-semibold">
+                                Image {item.number}/20
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {item.outfit} • {item.setting}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-300 font-mono bg-dark-surface/50 p-3 rounded border border-gray-800/30">
+                            {item.prompt}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex space-x-4 mt-6 pt-6 border-t border-gray-800/50">
+                      <button
+                        onClick={() => {
+                          setShowPromptPreview(false)
+                          handleGenerateTrainingImages()
+                        }}
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+                      >
+                        Generate with These Prompts
+                      </button>
+                      <button
+                        onClick={() => setShowPromptPreview(false)}
+                        className="px-6 py-3 bg-dark-card hover:bg-gray-700 text-white font-semibold rounded-xl transition-colors border border-gray-800/30"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
+
+              {/* Training Image Modal */}
+              {trainingImageModalOpen && selectedTrainingImage && (() => {
+                const imageUrl = selectedTrainingImage.url?.startsWith('http') 
+                  ? selectedTrainingImage.url 
+                  : `http://localhost:3001${selectedTrainingImage.url}`
+                
+                return (
+                  <div 
+                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) {
+                        setTrainingImageModalOpen(false)
+                      }
+                    }}
+                  >
+                    <div className="relative bg-dark-surface backdrop-blur-xl rounded-2xl p-8 max-w-2xl w-full border border-white/10 max-h-[90vh] overflow-y-auto">
+                      {/* Close Button */}
+                      <button
+                        onClick={() => setTrainingImageModalOpen(false)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
+                      >
+                        <HiX className="w-6 h-6" />
+                      </button>
+
+                      <h3 className="text-2xl font-bold text-white mb-4">
+                        Training Image #{generatedContent.filter(c => c && c.type === 'training_image').findIndex(c => c.id === selectedTrainingImage.id) + 1}
+                      </h3>
+
+                      {/* Image Preview */}
+                      <div className="mb-6">
+                        <img 
+                          src={imageUrl} 
+                          alt="Training Image" 
+                          className="w-full rounded-lg border border-gray-800/30"
+                        />
+                      </div>
+
+                      {/* Prompt Section */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Prompt / Description
+                        </label>
+                        <textarea
+                          value={customPrompt}
+                          onChange={(e) => setCustomPrompt(e.target.value)}
+                          className="w-full px-4 py-3 bg-dark-card border border-gray-800/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[120px]"
+                          placeholder="Enter or modify the prompt used to generate this image..."
+                        />
+                        <p className="text-xs text-gray-400 mt-2">
+                          Modify the prompt to change how this image is regenerated
+                        </p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={handleRegenerateTrainingImage}
+                          disabled={regeneratingTrainingImage}
+                          className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-lg shadow-orange-600/30 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2"
+                        >
+                          <HiOutlineRefresh className="w-5 h-5" />
+                          <span>{regeneratingTrainingImage ? 'Regenerating...' : 'Regenerate with AI'}</span>
+                        </button>
+                        <button
+                          onClick={() => setTrainingImageModalOpen(false)}
+                          className="px-6 py-4 bg-dark-card hover:bg-gray-700 text-white font-semibold rounded-xl transition-colors border border-gray-800/30"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Step 5: Daily Automatic Content Output */}
               <div className="relative group">
@@ -2274,7 +3258,17 @@ function Influencers() {
               </div>
               {generationStatus !== 'generating' && (
                 <button
-                  onClick={() => setShowGenerationModal(false)}
+                  onClick={() => {
+                    setShowGenerationModal(false)
+                    // If this was a style image generation, scroll to Step 4
+                    if (generatingStyleImages || generationTitle.includes('Style')) {
+                      setTimeout(() => {
+                        if (step4Ref.current) {
+                          step4Ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }
+                      }, 100)
+                    }
+                  }}
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   <HiX className="w-6 h-6" />
@@ -2329,7 +3323,16 @@ function Influencers() {
                 <button
                   onClick={() => {
                     setShowGenerationModal(false)
-                    window.location.reload()
+                    // If this was a style image generation, scroll to Step 4 instead of reloading
+                    if (generatingStyleImages || generationTitle.includes('Style')) {
+                      setTimeout(() => {
+                        if (step4Ref.current) {
+                          step4Ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }
+                      }, 100)
+                    } else {
+                      window.location.reload()
+                    }
                   }}
                   className="bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-600/20 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200"
                 >
@@ -2338,7 +3341,17 @@ function Influencers() {
               )}
               {generationStatus === 'error' && (
                 <button
-                  onClick={() => setShowGenerationModal(false)}
+                  onClick={() => {
+                    setShowGenerationModal(false)
+                    // If this was a style image generation, scroll to Step 4
+                    if (generatingStyleImages || generationTitle.includes('Style')) {
+                      setTimeout(() => {
+                        if (step4Ref.current) {
+                          step4Ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }
+                      }, 100)
+                    }
+                  }}
                   className="bg-dark-card hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors border border-gray-800/30"
                 >
                   Close

@@ -55,15 +55,22 @@ function GeneratedContent() {
     }
   }
 
-  // Filter content
-  const filteredContent = content.filter(item => {
-    const matchesSearch = !searchQuery || 
-      item.type?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesType = filterType === 'all' || item.type === filterType
-    const matchesInfluencer = filterInfluencer === 'all' || 
-      item.influencerId === parseInt(filterInfluencer)
-    return matchesSearch && matchesType && matchesInfluencer
-  })
+  // Filter and sort content (newest first)
+  const filteredContent = content
+    .filter(item => {
+      const matchesSearch = !searchQuery || 
+        item.type?.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesType = filterType === 'all' || item.type === filterType
+      const matchesInfluencer = filterInfluencer === 'all' || 
+        item.influencerId === parseInt(filterInfluencer)
+      return matchesSearch && matchesType && matchesInfluencer
+    })
+    .sort((a, b) => {
+      // Sort by createdAt (newest first)
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return dateB - dateA // Descending order (newest first)
+    })
 
   const getContentTypeLabel = (type) => {
     const labels = {

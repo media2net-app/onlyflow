@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Influencer {
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String?
+  image             String?
+  imageUrl          String?
+  gender            String?
+  age               Int?
+  location          String?
+  hairColor         String?
+  activities        String[] @default([])
+  settings          String[] @default([])
+  additionalInfo    String[] @default([])
+  clothingStyles    String[] @default([])
+  feedPosts         Int      @default(0)
+  storyPosts        Int      @default(0)
+  video5s           Int      @default(0)
+  video8s           Int      @default(0)
+  captionVideo      Boolean  @default(false)
+  trendsVideos      Int      @default(0)
+  multiAngle        Int      @default(0)
+  pauseChallenge    Int      @default(0)
+  outfitChanger     Int      @default(0)
+  beforeAfter       Int      @default(0)
+  dailyContentEnabled Boolean @default(false)
+  trainingProgress  Int      @default(0)
+  imagesLocked      Int      @default(0)
+  stylesChosen      Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  content           Content[]
+  socialAccounts    SocialMediaAccount[]
+  
+  @@map("influencers")
+}
+
+model Content {
+  id           Int      @id @default(autoincrement())
+  influencerId Int
+  type         String   // feed_post, story_post, training_image, profile_image, style_image
+  url          String
+  status       String   @default("completed")
+  style        String?  // For style_image type
+  prompt       String?
+  aspectRatio  String?
+  quality      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("content")
+  @@index([influencerId])
+  @@index([type])
+}
+
+model SocialMediaAccount {
+  id                Int      @id @default(autoincrement())
+  influencerId      Int
+  platform           String   // instagram, facebook, twitter, tiktok, linkedin, pinterest, youtube
+  accountName        String?  // Username or account identifier
+  accountId          String?  // Platform-specific account ID
+  accessToken        String?  // OAuth access token (encrypted in production)
+  refreshToken       String?  // OAuth refresh token (encrypted in production)
+  tokenExpiresAt     DateTime? // Token expiration date
+  isConnected        Boolean  @default(false)
+  connectionStatus   String   @default("disconnected") // disconnected, connected, expired, error
+  lastSyncAt         DateTime?
+  followerCount      Int?
+  postCount           Int?
+  errorMessage        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  influencer        Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("social_media_accounts")
+  @@index([influencerId])
+  @@index([platform])
+  @@unique([influencerId, platform]) // One account per platform per influencer
+}

@@ -193,10 +193,25 @@ router.post('/generate-training-images', async (req, res) => {
       // Use parsed count to ensure it's a number (imageCount already declared above)
       console.log(`   ✅ Starting generation with count: ${imageCount}`)
       generateTrainingImages(influencerData, imageCount, profileImageUrl)
-        .then(async (images) => {
+        .then(async (result) => {
           const savedImages = []
+          // Get images and prompts from the result
+          const images = result.images || result || []
+          const prompts = result.prompts || []
+          
           for (let i = 0; i < images.length; i++) {
-            const filename = `training_${influencerData.id || 'new'}_${i + 1}.png`
+            // Generate unique filename with timestamp and style name if it's a style image
+            const timestamp = Date.now()
+            const random = Math.floor(Math.random() * 10000)
+            let filename
+            if (influencerData.style) {
+              // For style images: include style name and timestamp for uniqueness
+              const styleSlug = influencerData.style.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()
+              filename = `style_${influencerData.id || 'new'}_${styleSlug}_${timestamp}_${random}.png`
+            } else {
+              // For training images: use original format
+              filename = `training_${influencerData.id || 'new'}_${timestamp}_${random}_${i + 1}.png`
+            }
             const filepath = path.join(storageDir, filename)
             await fs.writeFile(filepath, images[i])
             savedImages.push({
@@ -220,6 +235,14 @@ router.post('/generate-training-images', async (req, res) => {
                 // Add style property if it's a style_image
                 if (influencerData.style) {
                   contentData.style = influencerData.style
+                }
+                
+                // Add prompt if available (for training images)
+                if (prompts[i]) {
+                  contentData.prompt = prompts[i]
+                } else if (!influencerData.style) {
+                  // Fallback: create a basic description if prompt not available
+                  contentData.prompt = `Training image ${i + 1} for ${influencerData.name || 'influencer'}`
                 }
                 
                 await axios.post('http://localhost:3001/api/content', contentData)

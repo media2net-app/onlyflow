@@ -4,6 +4,7 @@ import {
   getContentById, 
   getContentByInfluencer,
   createContent,
+  updateContent,
   deleteContent,
   uploadTrainingImages,
   uploadMiddleware
@@ -25,6 +26,9 @@ router.get('/influencer/:influencerId', getContentByInfluencer)
 
 // GET /api/content/:id - Get content by ID
 router.get('/:id', getContentById)
+
+// PUT /api/content/:id - Update content
+router.put('/:id', updateContent)
 
 // DELETE /api/content/:id - Delete content
 router.delete('/:id', deleteContent)

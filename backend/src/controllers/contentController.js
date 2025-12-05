@@ -160,6 +160,41 @@ export const createContent = async (req, res) => {
   }
 }
 
+export const updateContent = async (req, res) => {
+  try {
+    const { id } = req.params
+    const contentIndex = content.findIndex(c => c.id === parseInt(id))
+    
+    if (contentIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Content not found'
+      })
+    }
+    
+    // Update content with new data
+    content[contentIndex] = {
+      ...content[contentIndex],
+      ...req.body,
+      updatedAt: new Date().toISOString()
+    }
+    
+    // Save to storage
+    await saveContent(content)
+    
+    res.json({
+      success: true,
+      data: content[contentIndex]
+    })
+  } catch (error) {
+    console.error('Error updating content:', error)
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to update content'
+    })
+  }
+}
+
 export const deleteContent = async (req, res) => {
   try {
     const { id } = req.params

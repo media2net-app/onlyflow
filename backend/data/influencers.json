@@ -19,11 +19,34 @@
     "outfitChanger": 0,
     "beforeAfter": 0,
     "dailyContentEnabled": true,
-    "trainingProgress": 60,
-    "imagesLocked": 11,
-    "stylesChosen": 2,
+    "trainingProgress": 90,
+    "imagesLocked": 20,
+    "stylesChosen": 6,
     "createdAt": "2025-12-04T22:45:31.996Z",
-    "updatedAt": "2025-12-04T22:50:16.113Z"
+    "updatedAt": "2025-12-05T07:42:07.973Z",
+    "hairColor": "",
+    "activities": [
+      "traveling and exploring",
+      "beach and swimming",
+      "coffee and cafe hopping"
+    ],
+    "settings": [
+      "bedroom with natural lighting",
+      "walk-in closet or wardrobe area",
+      "balcony or outdoor spaces"
+    ],
+    "additionalInfo": [
+      "home decor enthusiast",
+      "loves fashion and styling"
+    ],
+    "clothingStyles": [
+      "GLAM/ELEGANT",
+      "PROFESSIONAL",
+      "LINGERIE",
+      "SPORTY",
+      "YOUTHFUL",
+      "CASUAL"
+    ]
   },
   {
     "id": 2,
@@ -36,16 +59,20 @@
     "activities": [],
     "settings": [],
     "additionalInfo": [],
-    "clothingStyles": [],
+    "clothingStyles": [
+      "LINGERIE",
+      "SPORTY",
+      "CASUAL"
+    ],
     "feedPosts": 0,
     "storyPosts": 0,
     "dailyContentEnabled": false,
-    "trainingProgress": 20,
-    "imagesLocked": 1,
-    "stylesChosen": 0,
+    "trainingProgress": 50,
+    "imagesLocked": 4,
+    "stylesChosen": 3,
     "createdAt": "2025-12-04T22:50:43.802Z",
     "imageUrl": "http://localhost:3001/storage/profile_1764889033040.png",
-    "updatedAt": "2025-12-04T22:57:14.861Z"
+    "updatedAt": "2025-12-05T05:54:01.837Z"
   },
   {
     "id": 3,
@@ -55,18 +82,85 @@
     "age": 18,
     "location": "The Netherlands",
     "hairColor": "Blond",
-    "activities": [],
-    "settings": [],
+    "activities": [
+      "working out at the gym"
+    ],
+    "settings": [
+      "studio apartment"
+    ],
     "additionalInfo": [],
-    "clothingStyles": [],
+    "clothingStyles": [
+      "CASUAL",
+      "LINGERIE",
+      "PROFESSIONAL",
+      "SPORTY",
+      "GLAM/ELEGANT",
+      "YOUTHFUL"
+    ],
+    "feedPosts": 2,
+    "storyPosts": 0,
+    "dailyContentEnabled": false,
+    "trainingProgress": 83,
+    "imagesLocked": 7,
+    "stylesChosen": 6,
+    "createdAt": "2025-12-04T22:59:14.286Z",
+    "imageUrl": "http://localhost:3001/storage/profile_1764889185422.png",
+    "updatedAt": "2025-12-04T23:45:38.076Z"
+  },
+  {
+    "id": 4,
+    "name": "Emily",
+    "description": "Content creater",
+    "gender": "Female",
+    "age": 25,
+    "location": "Luxury destinations worldwide",
+    "hairColor": "long brown hair",
+    "activities": [
+      "traveling and exploring new destinations",
+      "working out at the gym",
+      "enjoying luxury dining experiences",
+      "relaxing at beautiful beaches",
+      "shopping for fashion",
+      "attending social events",
+      "practicing yoga and wellness",
+      "exploring city nightlife",
+      "visiting spas and wellness centers",
+      "photoshoots in exotic locations"
+    ],
+    "settings": [
+      "luxury hotel rooms with city views",
+      "upscale restaurants and bars",
+      "beautiful beaches and resorts",
+      "modern gyms and fitness studios",
+      "boutique shopping districts",
+      "penthouse apartments",
+      "luxury spas",
+      "exotic travel destinations",
+      "rooftop terraces",
+      "boudoir settings with natural lighting"
+    ],
+    "additionalInfo": [
+      "sexy and alluring",
+      "tasteful and elegant",
+      "confident and sophisticated",
+      "natural and authentic",
+      "high-end lifestyle",
+      "professional photography quality"
+    ],
+    "clothingStyles": [
+      "LINGERIE",
+      "GLAM/ELEGANT",
+      "CASUAL",
+      "SPORTY"
+    ],
     "feedPosts": 0,
     "storyPosts": 0,
     "dailyContentEnabled": false,
-    "trainingProgress": 50,
+    "trainingProgress": 60,
     "imagesLocked": 1,
-    "stylesChosen": 0,
-    "createdAt": "2025-12-04T22:59:14.286Z",
-    "imageUrl": "http://localhost:3001/storage/profile_1764889185422.png",
-    "updatedAt": "2025-12-04T23:05:53.957Z"
+    "stylesChosen": 4,
+    "createdAt": "2025-12-05T07:15:16.442Z",
+    "updatedAt": "2025-12-05T07:16:41.058Z",
+    "imageUrl": "http://localhost:3001/storage/profile_1764919001008.png"
   }
 ]

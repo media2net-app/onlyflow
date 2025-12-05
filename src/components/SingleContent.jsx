@@ -16,6 +16,7 @@ function SingleContent() {
   const navigate = useNavigate()
   const [influencers, setInfluencers] = useState([])
   const [selectedInfluencer, setSelectedInfluencer] = useState(null)
+  const [showInfluencerDropdown, setShowInfluencerDropdown] = useState(false)
   const [activity, setActivity] = useState('')
   const [outfit, setOutfit] = useState('')
   const [location, setLocation] = useState('')
@@ -387,36 +388,125 @@ function SingleContent() {
             <h3 className="text-lg font-semibold text-white mb-2">Influencer</h3>
             <p className="text-sm text-gray-400 mb-4">Loads today's plan defaults automatically.</p>
             
-            <div className="flex items-center space-x-4">
-              <input
-                type="text"
-                value={selectedInfluencer?.name || ''}
-                readOnly
-                className="flex-1 bg-dark-card border border-gray-800/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-              
-              {selectedInfluencer && (
-                <div className="flex items-center space-x-3 bg-dark-card rounded-lg p-3 border border-gray-800/30">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-purple-300 flex items-center justify-center overflow-hidden relative">
-                    {selectedInfluencer.imageUrl ? (
-                      <img 
-                        src={selectedInfluencer.imageUrl.startsWith('http') 
-                          ? selectedInfluencer.imageUrl 
-                          : `http://localhost:3001${selectedInfluencer.imageUrl}`} 
-                        alt={selectedInfluencer.name}
-                        className="w-full h-full object-cover object-top"
-                      />
+            <div className="relative">
+              {/* Dropdown Button */}
+              <button
+                type="button"
+                onClick={() => setShowInfluencerDropdown(!showInfluencerDropdown)}
+                className="w-full bg-dark-card border border-gray-800/30 rounded-lg px-4 py-3 text-left flex items-center space-x-3 hover:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+              >
+                {selectedInfluencer ? (
+                  <>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-purple-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {selectedInfluencer.imageUrl ? (
+                        <img 
+                          src={selectedInfluencer.imageUrl.startsWith('http') 
+                            ? selectedInfluencer.imageUrl 
+                            : `http://localhost:3001${selectedInfluencer.imageUrl}`} 
+                          alt={selectedInfluencer.name}
+                          className="w-full h-full object-cover object-top"
+                        />
+                      ) : (
+                        <span className="text-white font-bold">{selectedInfluencer.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white font-medium truncate">{selectedInfluencer.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{selectedInfluencer.description || 'Content Creator'}</p>
+                    </div>
+                    <svg 
+                      className={`w-5 h-5 text-gray-400 transition-transform ${showInfluencerDropdown ? 'transform rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                ) : (
+                  <span className="text-gray-500">Select an influencer...</span>
+                )}
+              </button>
+
+              {/* Dropdown Menu */}
+              {showInfluencerDropdown && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setShowInfluencerDropdown(false)}
+                  ></div>
+                  <div className="absolute z-20 mt-2 w-full bg-dark-card border border-gray-800/30 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                    {influencers.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-gray-400">No influencers available</div>
                     ) : (
-                      <span className="text-white font-bold">{selectedInfluencer.name.charAt(0)}</span>
+                      influencers.map((influencer) => (
+                        <button
+                          key={influencer.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedInfluencer(influencer)
+                            setShowInfluencerDropdown(false)
+                            // Load plan defaults
+                            if (influencer.activities && influencer.activities.length > 0) {
+                              setActivity(influencer.activities[0])
+                            }
+                            if (influencer.settings && influencer.settings.length > 0) {
+                              setLocation(influencer.settings[0])
+                            }
+                          }}
+                          className={`w-full px-4 py-3 flex items-center space-x-3 hover:bg-gray-800/50 transition-colors ${
+                            selectedInfluencer?.id === influencer.id ? 'bg-purple-500/20' : ''
+                          }`}
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-purple-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {influencer.imageUrl ? (
+                              <img 
+                                src={influencer.imageUrl.startsWith('http') 
+                                  ? influencer.imageUrl 
+                                  : `http://localhost:3001${influencer.imageUrl}`} 
+                                alt={influencer.name}
+                                className="w-full h-full object-cover object-top"
+                              />
+                            ) : (
+                              <span className="text-white font-bold">{influencer.name.charAt(0)}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <p className="text-sm text-white font-medium truncate">{influencer.name}</p>
+                            <p className="text-xs text-gray-400 truncate">{influencer.description || 'Content Creator'}</p>
+                          </div>
+                          {selectedInfluencer?.id === influencer.id && (
+                            <HiOutlineCheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                          )}
+                        </button>
+                      ))
                     )}
                   </div>
-                  <div>
-                    <p className="text-sm text-white font-medium">{selectedInfluencer.description || 'Content Creator'}</p>
-                    <p className="text-xs text-green-400">Ready</p>
-                  </div>
-                </div>
+                </>
               )}
             </div>
+            
+            {selectedInfluencer && (
+              <div className="mt-4 flex items-center space-x-3 bg-dark-card rounded-lg p-3 border border-gray-800/30">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-purple-300 flex items-center justify-center overflow-hidden relative">
+                  {selectedInfluencer.imageUrl ? (
+                    <img 
+                      src={selectedInfluencer.imageUrl.startsWith('http') 
+                        ? selectedInfluencer.imageUrl 
+                        : `http://localhost:3001${selectedInfluencer.imageUrl}`} 
+                      alt={selectedInfluencer.name}
+                      className="w-full h-full object-cover object-top"
+                    />
+                  ) : (
+                    <span className="text-white font-bold">{selectedInfluencer.name.charAt(0)}</span>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-white font-medium">{selectedInfluencer.description || 'Content Creator'}</p>
+                  <p className="text-xs text-green-400">Ready</p>
+                </div>
+              </div>
+            )}
             
             {selectedInfluencer && (activity || outfit || location) && (
               <div className="mt-4 p-3 bg-dark-card rounded-lg border border-gray-800/30">
